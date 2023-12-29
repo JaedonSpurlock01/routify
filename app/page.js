@@ -26,7 +26,7 @@ export default function Home() {
         <CityMap parsedLineData={parsedLineData} />
         <OrbitControls
           enableDamping={true}
-          enableRotate={true}
+          enableRotate={false}
           enablePan={true}
           mouseButtons={{
             LEFT: THREE.MOUSE.PAN,
