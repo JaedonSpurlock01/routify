@@ -1,3 +1,9 @@
+import MapWithLines from "./(components)/line-render";
+
 export default function Home() {
-  return <div>ROUTIFY APP</div>;
+  return (
+    <div className="h-full w-full">
+      <MapWithLines />
+    </div>
+  );
 }
