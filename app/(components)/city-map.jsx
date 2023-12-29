@@ -7,8 +7,8 @@ import * as THREE from "three";
 const tempColor = new THREE.Color();
 const tempObject = new THREE.Object3D();
 
-// Define segment and arrow props
-const lineWidth = 1;
+// Define line width
+const lineWidth = 0.0001;
 
 // Define line geometry
 const lineBaseSeg = new THREE.Shape();
@@ -23,11 +23,28 @@ const CityMap = ({ parsedLineData }) => {
   const lineMeshRef = useRef();
   const totalLines = parsedLineData.lineArray.length;
 
+  // Calculate the center of the map
+  const center = useMemo(() => {
+    let sumX = 0,
+      sumY = 0;
+    parsedLineData.lineArray.forEach(({ start, end }) => {
+      sumX += (start[0] + end[0]) / 2;
+      sumY += (start[1] + end[1]) / 2;
+    });
+    return {
+      x: sumX / parsedLineData.lineArray.length,
+      y: sumY / parsedLineData.lineArray.length,
+    };
+  }, [parsedLineData]);
+
   // Generate segment properties
   const segmentsProps = useMemo(
     () =>
       parsedLineData.lineArray.map(({ start, end }) => ({
-        coords: [start, end],
+        coords: [
+          [start[0] - center.x, start[1] - center.y],
+          [end[0] - center.x, end[1] - center.y],
+        ],
         color: tempColor.setHex(0xffffff).clone(),
         computedData: {
           length: undefined,
@@ -36,7 +53,7 @@ const CityMap = ({ parsedLineData }) => {
           angle: undefined,
         },
       })),
-    [parsedLineData]
+    [parsedLineData, center.x, center.y]
   );
 
   useLayoutEffect(() => {

@@ -14,13 +14,18 @@ export default function Home() {
     <div className="h-screen w-screen ">
       <Canvas
         camera={{
-          position: [parsedLineData.centerX, parseLineData.centerY, 180],
+          position: [0, 0, 0.1],
+          near: 0.001,
+          far: 1000,
+          aspect: window.innerWidth / window.innerHeight,
         }}
-        onCreated={({ gl }) => gl.setClearColor("#242424")}
+        onCreated={({ gl }) => {
+          gl.setClearColor("#242424");
+        }}
       >
         <CityMap parsedLineData={parsedLineData} />
         <OrbitControls
-          enableDamping={false}
+          enableDamping={true}
           enableRotate={true}
           enablePan={true}
           mouseButtons={{
