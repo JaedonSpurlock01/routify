@@ -42,8 +42,6 @@ const parseLineData = () => {
 };
 
 const MapWithLines = () => {
-  const sceneRef = useRef();
-  const cameraRef = useRef();
   const mouseRef = useRef({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
 
@@ -91,9 +89,6 @@ const MapWithLines = () => {
 
     // Set the camera position
     camera.position.set(centerX, centerY, 20);
-
-    sceneRef.current = scene;
-    cameraRef.current = camera;
 
     // Animation loop
     const animate = () => {
