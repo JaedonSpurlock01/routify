@@ -6,6 +6,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useState } from "react";
 import { CitySearch } from "./(components)/city-search";
+import { NavBar } from "./(components)/nav-bar";
 
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);
@@ -22,7 +23,7 @@ export default function Home() {
         </div>
       )}
       {mapIsReady && (
-        <div className="h-screen w-screen ">
+        <div className="h-screen w-screen relative">
           <Canvas
             camera={{
               position: [0, 0, 0.1],
@@ -31,7 +32,7 @@ export default function Home() {
               aspect: window.innerWidth / window.innerHeight,
             }}
             onCreated={({ gl }) => {
-              gl.setClearColor("#121212");
+              gl.setClearColor("#2B2F33");
             }}
           >
             <CityMap parsedLineData={parsedLineData} />
@@ -46,6 +47,7 @@ export default function Home() {
               }}
             />
           </Canvas>
+          <NavBar />
         </div>
       )}
     </>

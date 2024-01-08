@@ -10,6 +10,9 @@ const tempObject = new THREE.Object3D();
 // Define line width
 const lineWidth = 0.0001;
 
+// City Line Color
+const lineColor = 0x83888c;
+
 // Define line geometry
 const lineBaseSeg = new THREE.Shape();
 lineBaseSeg.moveTo(0, 0.5);
@@ -45,7 +48,7 @@ const CityMap = ({ parsedLineData }) => {
           [start[0] - center.x, start[1] - center.y],
           [end[0] - center.x, end[1] - center.y],
         ],
-        color: tempColor.setHex(0xffffff).clone(),
+        color: tempColor.setHex(lineColor).clone(),
         computedData: {
           length: undefined,
           dx: undefined,
