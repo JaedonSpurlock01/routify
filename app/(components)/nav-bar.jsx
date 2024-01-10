@@ -17,7 +17,7 @@ export const NavBar = () => {
           <IoMdPlay className="ml-[0.4rem]" />
         </button>
 
-        <button className="bg-[#565e70] p-2 text-xs text-neutral-100 w-[8rem] h-9 hover:shadow-lg hover:shadow-neutral-800 transition-all rounded-md font-medium">
+        <button className="bg-[#565e70] p-2 text-xs text-neutral-100 w-[8rem] h-9 hover:shadow-lg hover:shadow-neutral-800 transition-all rounded-md font-medium select-none">
           CLEAR PATH
         </button>
       </div>
