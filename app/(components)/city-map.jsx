@@ -28,6 +28,8 @@ const CityMap = ({ parsedLineData }) => {
   const totalLines = parsedLineData.length;
   const cityGraph = useMemo(() => new Graph(), []); // Will run only one time since dependency is empty
 
+  const cityEdgeToIndex = useMemo(() => new Map(), []); // (x1, y1, z1), (x2, y2, z2): index
+
   // Calculate the center of the map
   const center = useMemo(() => {
     let sumX = 0,
@@ -98,16 +100,21 @@ const CityMap = ({ parsedLineData }) => {
       const coords = segment.coords;
       const computedData = segment.computedData;
 
+      const x1 = coords[0][0];
+      const y1 = coords[0][1];
+      const x2 = coords[1][0];
+      const y2 = coords[1][1];
+
       if (
         computedData.dx === undefined ||
         computedData.y === undefined ||
         computedData.angle === undefined
       ) {
-        const startVector = new THREE.Vector3(coords[0][0], coords[0][1], 0);
-        const endVector = new THREE.Vector3(coords[1][0], coords[1][1], 0);
+        const startVector = new THREE.Vector3(x1, y1, 0);
+        const endVector = new THREE.Vector3(x2, y2, 0);
         const length = endVector.distanceTo(startVector);
-        const dx = coords[1][0] - coords[0][0];
-        const dy = coords[1][1] - coords[0][1];
+        const dx = x2 - x1;
+        const dy = y2 - y1;
 
         computedData.dx = dx;
         computedData.dy = dy;
@@ -119,7 +126,7 @@ const CityMap = ({ parsedLineData }) => {
       }
 
       // set line position
-      tempObject.position.set(coords[0][0], coords[0][1], 0);
+      tempObject.position.set(x1, y1, 0);
       tempObject.rotation.set(0, 0, computedData.angle ?? 0);
       tempObject.scale.set(
         computedData.length ? computedData.length : 1,
@@ -130,13 +137,16 @@ const CityMap = ({ parsedLineData }) => {
       tempObject.updateMatrix();
       lineMesh.setMatrixAt(i, tempObject.matrix);
       lineMesh.setColorAt(i, color);
+
+      // Add to list of edges to be able to change line color directly
+      cityEdgeToIndex.set(`(${x1}, ${x2}, 0), (${x2}, ${y2}, 0)`, i);
     }
 
     // Launch updates
     lineMesh.instanceMatrix.needsUpdate = true;
     lineMesh.instanceColor.needsUpdate = true;
     lineMesh.material.needsUpdate = true;
-  }, [segmentsProps, totalLines]);
+  }, [segmentsProps, totalLines, cityEdgeToIndex]);
 
   return (
     <instancedMesh ref={lineMeshRef} args={[null, null, totalLines]}>
