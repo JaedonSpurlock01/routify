@@ -32,10 +32,13 @@ lineBaseSeg.lineTo(0, 0.5);
 const CityMap = ({ parsedLineData }) => {
   // Define ref to update the triangles and the lines
   const lineMeshRef = useRef();
-  const totalLines = parsedLineData.length;
-  const selectedLines = 0;
-  const cityGraph = useMemo(() => new Graph(), []); // Will run only one time since dependency is empty
+  const glowingLineMeshRef = useRef();
 
+  const totalLines = parsedLineData.length;
+  const totalGlowingLines = 0;
+
+  // Will run only one time since dependency is empty, this prevents unwanted problems with useEffect
+  const cityGraph = useMemo(() => new Graph(), []); 
   const cityEdgeToIndex = useMemo(() => new Map(), []); // (x1, y1, z1), (x2, y2, z2): index
 
   // Calculate the center of the map
@@ -71,6 +74,7 @@ const CityMap = ({ parsedLineData }) => {
     [parsedLineData, center.x, center.y]
   );
 
+  // Convert city data into graph data structure
   useEffect(() => {
     cityGraph.clearGraph();
     parsedLineData.forEach(({ start, end }) => {
@@ -164,7 +168,7 @@ const CityMap = ({ parsedLineData }) => {
       );
     }
 
-    for (let i = 0; i < totalLines / 3; i++) {
+    for (let i = 0; i < totalLines / 10; i++) {
       lineMesh.setColorAt(i, selectedColor);
     }
 
@@ -190,6 +194,15 @@ const CityMap = ({ parsedLineData }) => {
       </EffectComposer>
 
       <instancedMesh ref={lineMeshRef} args={[null, null, totalLines]}>
+        <shapeGeometry args={[lineBaseSeg]} />
+        <meshBasicMaterial
+          attach="material"
+          side={THREE.DoubleSide}
+          toneMapped={false}
+        />
+      </instancedMesh>
+
+      <instancedMesh>
         <shapeGeometry args={[lineBaseSeg]} />
         <meshBasicMaterial
           attach="material"
