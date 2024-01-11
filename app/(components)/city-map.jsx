@@ -1,7 +1,7 @@
 "use client";
 
 import { Graph } from "@/lib/graph";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
 
 // Temp object for color setting and position settings
@@ -25,27 +25,27 @@ lineBaseSeg.lineTo(0, 0.5);
 const CityMap = ({ parsedLineData }) => {
   // Define ref to update the triangles and the lines
   const lineMeshRef = useRef();
-  const totalLines = parsedLineData.lineArray.length;
+  const totalLines = parsedLineData.length;
   const cityGraph = useMemo(() => new Graph(), []); // Will run only one time since dependency is empty
 
   // Calculate the center of the map
   const center = useMemo(() => {
     let sumX = 0,
       sumY = 0;
-    parsedLineData.lineArray.forEach(({ start, end }) => {
+    parsedLineData.forEach(({ start, end }) => {
       sumX += (start[0] + end[0]) / 2;
       sumY += (start[1] + end[1]) / 2;
     });
     return {
-      x: sumX / parsedLineData.lineArray.length,
-      y: sumY / parsedLineData.lineArray.length,
+      x: sumX / parsedLineData.length,
+      y: sumY / parsedLineData.length,
     };
   }, [parsedLineData]);
 
   // Generate segment properties
   const segmentsProps = useMemo(
     () =>
-      parsedLineData.lineArray.map(({ start, end }) => ({
+      parsedLineData.map(({ start, end }) => ({
         coords: [
           [start[0] - center.x, start[1] - center.y],
           [end[0] - center.x, end[1] - center.y],
