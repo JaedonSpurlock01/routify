@@ -80,7 +80,7 @@ const CityMap = ({ parsedLineData }) => {
         false
       );
     });
-    cityGraph.printAll();
+    // cityGraph.printAll(); // <- very laggy with bigger cities, can sometimes crash website
   }, [parsedLineData, cityGraph, center.x, center.y]);
 
   useLayoutEffect(() => {

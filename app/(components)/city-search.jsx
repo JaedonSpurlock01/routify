@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { RotatingLines } from "react-loader-spinner";
 
-import jsonData from "@/lib/test-cities/marion-ohio.json";
+import jsonData from "@/lib/test-cities/san-diego.json";
 
 export const CitySearch = ({ setMapIsReady, setParsedLineData }) => {
   const [enteredInput, setEnteredInput] = useState("");
@@ -73,7 +73,7 @@ export const CitySearch = ({ setMapIsReady, setParsedLineData }) => {
     // Different types of filtering out lines
     // prettier-ignore
     const roadStrict = '[highway~"^(((motorway|trunk|primary|secondary|tertiary)(_link)?)|unclassified|residential|living_street|pedestrian|service|track)$"][area!=yes]';
-    
+
     // prettier-ignore
     const roadBasic = '[highway~"^(motorway|primary|secondary|tertiary)|residential"]';
     const road = "[highway]";
