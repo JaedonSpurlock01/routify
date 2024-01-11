@@ -77,6 +77,7 @@ const CityMap = ({ parsedLineData }) => {
         false
       );
     });
+    cityGraph.printAll();
   }, [parsedLineData, cityGraph]);
 
   useLayoutEffect(() => {
