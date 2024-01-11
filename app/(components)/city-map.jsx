@@ -1,5 +1,6 @@
 "use client";
 
+import { Graph } from "@/lib/graph";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
@@ -25,6 +26,7 @@ const CityMap = ({ parsedLineData }) => {
   // Define ref to update the triangles and the lines
   const lineMeshRef = useRef();
   const totalLines = parsedLineData.lineArray.length;
+  const cityGraph = useMemo(() => new Graph(), []); // Will run only one time since dependency is empty
 
   // Calculate the center of the map
   const center = useMemo(() => {
@@ -58,6 +60,24 @@ const CityMap = ({ parsedLineData }) => {
       })),
     [parsedLineData, center.x, center.y]
   );
+
+  useEffect(() => {
+    cityGraph.clearGraph();
+    parsedLineData.forEach(({ start, end }) => {
+      if (!cityGraph.findIfCoordsAlreadyExist(...start, 0)) {
+        cityGraph.addVertex(...start, 0);
+      }
+      if (!cityGraph.findIfCoordsAlreadyExist(...end, 0)) {
+        cityGraph.addVertex(...end, 0);
+      }
+      cityGraph.addEdgeWithCoords(
+        [...start, 0],
+        [...end, 0],
+        cityGraph.calculateDistance(...start, 0, ...end, 0),
+        false
+      );
+    });
+  }, [parsedLineData, cityGraph]);
 
   useLayoutEffect(() => {
     // Return if the ref is not ready
