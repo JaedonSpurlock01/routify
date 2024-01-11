@@ -64,21 +64,24 @@ const CityMap = ({ parsedLineData }) => {
   useEffect(() => {
     cityGraph.clearGraph();
     parsedLineData.forEach(({ start, end }) => {
-      if (!cityGraph.findIfCoordsAlreadyExist(...start, 0)) {
-        cityGraph.addVertex(...start, 0);
+      const vertex1Coords = [start[0] - center.x, start[1] - center.y, 0];
+      const vertex2Coords = [end[0] - center.x, end[1] - center.y, 0];
+
+      if (!cityGraph.findIfCoordsAlreadyExist(...vertex1Coords)) {
+        cityGraph.addVertex(...vertex1Coords);
       }
-      if (!cityGraph.findIfCoordsAlreadyExist(...end, 0)) {
-        cityGraph.addVertex(...end, 0);
+      if (!cityGraph.findIfCoordsAlreadyExist(...vertex2Coords)) {
+        cityGraph.addVertex(...vertex2Coords);
       }
       cityGraph.addEdgeWithCoords(
-        [...start, 0],
-        [...end, 0],
-        cityGraph.calculateDistance(...start, 0, ...end, 0),
+        vertex1Coords,
+        vertex2Coords,
+        cityGraph.calculateDistance(...vertex1Coords, ...vertex2Coords),
         false
       );
     });
     cityGraph.printAll();
-  }, [parsedLineData, cityGraph]);
+  }, [parsedLineData, cityGraph, center.x, center.y]);
 
   useLayoutEffect(() => {
     // Return if the ref is not ready
