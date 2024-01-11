@@ -16,7 +16,7 @@ const tempObject = new THREE.Object3D();
 const lineWidth = 0.0001;
 
 // Pathfinding color
-const selectedColor = tempColor.setHex(0x00ff00).clone();
+const selectedColor = tempColor.setHex(0xffec3d).clone();
 
 // City Line Color
 const lineColor = 0x83888c;
@@ -33,6 +33,7 @@ const CityMap = ({ parsedLineData }) => {
   // Define ref to update the triangles and the lines
   const lineMeshRef = useRef();
   const totalLines = parsedLineData.length;
+  const selectedLines = 0;
   const cityGraph = useMemo(() => new Graph(), []); // Will run only one time since dependency is empty
 
   const cityEdgeToIndex = useMemo(() => new Map(), []); // (x1, y1, z1), (x2, y2, z2): index
@@ -154,10 +155,13 @@ const CityMap = ({ parsedLineData }) => {
       const coords = segment.coords;
       const computedData = segment.computedData;
 
-      addLineToMesh(lineMesh, tempObject, color, coords, computedData, i)
+      addLineToMesh(lineMesh, tempObject, color, coords, computedData, i);
 
       // Add to list of edges to be able to change line color directly
-      cityEdgeToIndex.set(`(${coords[0][0]}, ${coords[0][1]}, 0), (${coords[1][0]}, ${coords[1][1]}, 0)`, i);
+      cityEdgeToIndex.set(
+        `(${coords[0][0]}, ${coords[0][1]}, 0), (${coords[1][0]}, ${coords[1][1]}, 0)`,
+        i
+      );
     }
 
     for (let i = 0; i < totalLines / 3; i++) {
@@ -170,7 +174,6 @@ const CityMap = ({ parsedLineData }) => {
     lineMesh.material.needsUpdate = true;
   }, [segmentsProps, totalLines, cityEdgeToIndex]);
 
-  
   return (
     <>
       <EffectComposer>
