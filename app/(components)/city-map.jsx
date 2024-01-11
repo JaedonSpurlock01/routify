@@ -4,12 +4,19 @@ import { Graph } from "@/lib/graph";
 import { useLayoutEffect, useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
 
+// Bloom effect imports
+import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import { BlurPass, Resizer, KernelSize, Resolution } from "postprocessing";
+
 // Temp object for color setting and position settings
 const tempColor = new THREE.Color();
 const tempObject = new THREE.Object3D();
 
 // Define line width
 const lineWidth = 0.0001;
+
+// Pathfinding color
+const selectedColor = tempColor.setHex(0x00ff00).clone();
 
 // City Line Color
 const lineColor = 0x83888c;
@@ -85,6 +92,53 @@ const CityMap = ({ parsedLineData }) => {
     // cityGraph.printAll(); // <- very laggy with bigger cities, can sometimes crash website
   }, [parsedLineData, cityGraph, center.x, center.y]);
 
+  function addLineToMesh(
+    lineMesh,
+    tempObject,
+    color,
+    coords,
+    computedData,
+    index
+  ) {
+    const x1 = coords[0][0];
+    const y1 = coords[0][1];
+    const x2 = coords[1][0];
+    const y2 = coords[1][1];
+
+    if (
+      computedData.dx === undefined ||
+      computedData.y === undefined ||
+      computedData.angle === undefined
+    ) {
+      const startVector = new THREE.Vector3(x1, y1, 0);
+      const endVector = new THREE.Vector3(x2, y2, 0);
+      const length = endVector.distanceTo(startVector);
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+
+      computedData.dx = dx;
+      computedData.dy = dy;
+      computedData.length = length;
+
+      const angle = Math.atan2(dy, dx);
+
+      computedData.angle = angle;
+    }
+
+    // set line position
+    tempObject.position.set(x1, y1, 0);
+    tempObject.rotation.set(0, 0, computedData.angle ?? 0);
+    tempObject.scale.set(
+      computedData.length ? computedData.length : 1,
+      lineWidth,
+      1
+    );
+    tempObject.updateMatrix();
+
+    lineMesh.setMatrixAt(index, tempObject.matrix);
+    lineMesh.setColorAt(index, color);
+  }
+
   useLayoutEffect(() => {
     // Return if the ref is not ready
     if (lineMeshRef === null) return;
@@ -100,46 +154,14 @@ const CityMap = ({ parsedLineData }) => {
       const coords = segment.coords;
       const computedData = segment.computedData;
 
-      const x1 = coords[0][0];
-      const y1 = coords[0][1];
-      const x2 = coords[1][0];
-      const y2 = coords[1][1];
-
-      if (
-        computedData.dx === undefined ||
-        computedData.y === undefined ||
-        computedData.angle === undefined
-      ) {
-        const startVector = new THREE.Vector3(x1, y1, 0);
-        const endVector = new THREE.Vector3(x2, y2, 0);
-        const length = endVector.distanceTo(startVector);
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-
-        computedData.dx = dx;
-        computedData.dy = dy;
-        computedData.length = length;
-
-        const angle = Math.atan2(dy, dx);
-
-        computedData.angle = angle;
-      }
-
-      // set line position
-      tempObject.position.set(x1, y1, 0);
-      tempObject.rotation.set(0, 0, computedData.angle ?? 0);
-      tempObject.scale.set(
-        computedData.length ? computedData.length : 1,
-        lineWidth,
-        1
-      );
-
-      tempObject.updateMatrix();
-      lineMesh.setMatrixAt(i, tempObject.matrix);
-      lineMesh.setColorAt(i, color);
+      addLineToMesh(lineMesh, tempObject, color, coords, computedData, i)
 
       // Add to list of edges to be able to change line color directly
-      cityEdgeToIndex.set(`(${x1}, ${x2}, 0), (${x2}, ${y2}, 0)`, i);
+      cityEdgeToIndex.set(`(${coords[0][0]}, ${coords[0][1]}, 0), (${coords[1][0]}, ${coords[1][1]}, 0)`, i);
+    }
+
+    for (let i = 0; i < totalLines / 3; i++) {
+      lineMesh.setColorAt(i, selectedColor);
     }
 
     // Launch updates
@@ -148,11 +170,31 @@ const CityMap = ({ parsedLineData }) => {
     lineMesh.material.needsUpdate = true;
   }, [segmentsProps, totalLines, cityEdgeToIndex]);
 
+  
   return (
-    <instancedMesh ref={lineMeshRef} args={[null, null, totalLines]}>
-      <shapeGeometry args={[lineBaseSeg]} />
-      <meshBasicMaterial attach="material" side={THREE.DoubleSide} />
-    </instancedMesh>
+    <>
+      <EffectComposer>
+        <Bloom
+          intensity={1.0} // The bloom intensity.
+          blurPass={undefined} // A blur pass.
+          kernelSize={KernelSize.LARGE} // blur kernel size
+          luminanceThreshold={0.1} // luminance threshold. Raise this value to mask out darker elements in the scene.
+          luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
+          mipmapBlur={false} // Enables or disables mipmap blur.
+          resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
+          resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
+        />
+      </EffectComposer>
+
+      <instancedMesh ref={lineMeshRef} args={[null, null, totalLines]}>
+        <shapeGeometry args={[lineBaseSeg]} />
+        <meshBasicMaterial
+          attach="material"
+          side={THREE.DoubleSide}
+          toneMapped={false}
+        />
+      </instancedMesh>
+    </>
   );
 };
 
