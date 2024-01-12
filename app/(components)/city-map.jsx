@@ -111,7 +111,8 @@ const CityMap = ({ parsedLineData }) => {
     computedData,
     index,
     visible,
-    z_index = 0
+    z_index = 0,
+    lineWidth = 0.0001
   ) {
     const x1 = coords[0][0];
     const y1 = coords[0][1];
@@ -217,7 +218,8 @@ const CityMap = ({ parsedLineData }) => {
         computedData,
         currentIndex,
         true,
-        0.00001
+        0.00001,
+        0.0005,
       );
 
       cityEdgeToIndex.set(coords, currentIndex);
@@ -257,10 +259,10 @@ const CityMap = ({ parsedLineData }) => {
     <>
       <EffectComposer>
         <Bloom
+          selection={glowingLineMeshRef}
           intensity={1.0} // The bloom intensity.
-          blurPass={undefined} // A blur pass.
           kernelSize={KernelSize.LARGE} // blur kernel size
-          luminanceThreshold={0.1} // luminance threshold. Raise this value to mask out darker elements in the scene.
+          luminanceThreshold={0.25} // luminance threshold. Raise this value to mask out darker elements in the scene.
           luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
           mipmapBlur={false} // Enables or disables mipmap blur.
           resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
