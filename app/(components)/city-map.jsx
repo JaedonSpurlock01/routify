@@ -35,11 +35,10 @@ const CityMap = ({ parsedLineData }) => {
   const glowingLineMeshRef = useRef();
 
   const totalLines = parsedLineData.length;
-  const totalGlowingLines = 0;
 
   // Will run only one time since dependency is empty, this prevents unwanted problems with useEffect
-  const cityGraph = useMemo(() => new Graph(), []); 
-  const cityEdgeToIndex = useMemo(() => new Map(), []); // (x1, y1, z1), (x2, y2, z2): index
+  const cityGraph = useMemo(() => new Graph(), []);
+  const cityEdgeToIndex = useMemo(() => new Map(), []); // [[x1, y1, z1], [x2, y2, z2]]: index
 
   // Calculate the center of the map
   const center = useMemo(() => {
@@ -56,13 +55,16 @@ const CityMap = ({ parsedLineData }) => {
   }, [parsedLineData]);
 
   // Generate segment properties
-  const segmentsProps = useMemo(
-    () =>
-      parsedLineData.map(({ start, end }) => ({
-        coords: [
-          [start[0] - center.x, start[1] - center.y],
-          [end[0] - center.x, end[1] - center.y],
-        ],
+  const segmentsProps = useMemo(() => {
+    const segmentLineData = new Map();
+
+    parsedLineData.forEach(({ start, end }) => {
+      const coords = [
+        [start[0] - center.x, start[1] - center.y, 0],
+        [end[0] - center.x, end[1] - center.y, 0],
+      ];
+
+      const segmentValue = {
         color: tempColor.setHex(lineColor).clone(),
         computedData: {
           length: undefined,
@@ -70,9 +72,13 @@ const CityMap = ({ parsedLineData }) => {
           dy: undefined,
           angle: undefined,
         },
-      })),
-    [parsedLineData, center.x, center.y]
-  );
+      };
+
+      segmentLineData.set(coords, segmentValue);
+    });
+
+    return segmentLineData;
+  }, [parsedLineData, center.x, center.y]);
 
   // Convert city data into graph data structure
   useEffect(() => {
@@ -103,7 +109,9 @@ const CityMap = ({ parsedLineData }) => {
     color,
     coords,
     computedData,
-    index
+    index,
+    visible,
+    z_index = 0
   ) {
     const x1 = coords[0][0];
     const y1 = coords[0][1];
@@ -115,8 +123,8 @@ const CityMap = ({ parsedLineData }) => {
       computedData.y === undefined ||
       computedData.angle === undefined
     ) {
-      const startVector = new THREE.Vector3(x1, y1, 0);
-      const endVector = new THREE.Vector3(x2, y2, 0);
+      const startVector = new THREE.Vector3(x1, y1, z_index);
+      const endVector = new THREE.Vector3(x2, y2, z_index);
       const length = endVector.distanceTo(startVector);
       const dx = x2 - x1;
       const dy = y2 - y1;
@@ -130,53 +138,120 @@ const CityMap = ({ parsedLineData }) => {
       computedData.angle = angle;
     }
 
+    const scale = visible ? (computedData.length ? computedData.length : 1) : 0;
+
     // set line position
-    tempObject.position.set(x1, y1, 0);
+    tempObject.position.set(x1, y1, z_index);
     tempObject.rotation.set(0, 0, computedData.angle ?? 0);
-    tempObject.scale.set(
-      computedData.length ? computedData.length : 1,
-      lineWidth,
-      1
-    );
+    tempObject.scale.set(scale, lineWidth, 1);
     tempObject.updateMatrix();
 
     lineMesh.setMatrixAt(index, tempObject.matrix);
     lineMesh.setColorAt(index, color);
   }
 
+  function makeLineVisible(edgeCoords, lineMeshRef) {
+    if (!lineMeshRef.current) return;
+
+    const lineMesh = lineMeshRef.current;
+    const segment = segmentsProps.get(edgeCoords);
+    const index = cityEdgeToIndex.get(edgeCoords);
+
+    if (segment) {
+      addLineToMesh(
+        lineMesh,
+        tempObject,
+        segment.color,
+        edgeCoords,
+        segment.computedData,
+        index,
+        true
+      );
+    }
+  }
+
+  function changeLineColorByCoords(edgeCoords, lineMeshRef, color) {
+    if (!lineMeshRef.current) return;
+    const index = cityEdgeToIndex.get(edgeCoords);
+    lineMeshRef.current.setColorAt(index, color);
+    lineMeshRef.current.instanceColor.needsUpdate = true; // Lets ThreeJS know the buffer has changed
+  }
+
+  function changeLineColorByIndex(index, lineMeshRef, color) {
+    if (!lineMeshRef.current) return;
+    lineMeshRef.current.setColorAt(index, color);
+    lineMeshRef.current.instanceColor.needsUpdate = true; // Lets ThreeJS know the buffer has changed
+  }
+
   useLayoutEffect(() => {
     // Return if the ref is not ready
-    if (lineMeshRef === null) return;
-    if (lineMeshRef.current === null) return;
+    if (lineMeshRef === null || lineMeshRef.current === null) return;
+    if (glowingLineMeshRef === null || glowingLineMeshRef.current === null)
+      return;
 
     // Simplify syntax for the ref
     const lineMesh = lineMeshRef.current;
+    const glowingLineMesh = glowingLineMeshRef.current;
 
-    // Modify every segment in list of lines
-    for (let i = 0; i < totalLines; i++) {
-      const segment = segmentsProps[i];
+    let currentIndex = 0;
+
+    // Modify every segment in the map of lines
+    segmentsProps.forEach((segment, coords) => {
       const color = segment.color;
-      const coords = segment.coords;
       const computedData = segment.computedData;
 
-      addLineToMesh(lineMesh, tempObject, color, coords, computedData, i);
-
-      // Add to list of edges to be able to change line color directly
-      cityEdgeToIndex.set(
-        `(${coords[0][0]}, ${coords[0][1]}, 0), (${coords[1][0]}, ${coords[1][1]}, 0)`,
-        i
+      addLineToMesh(
+        lineMesh,
+        tempObject,
+        color,
+        coords,
+        computedData,
+        currentIndex,
+        true
       );
-    }
+      addLineToMesh(
+        glowingLineMesh,
+        tempObject,
+        color,
+        coords,
+        computedData,
+        currentIndex,
+        true,
+        0.00001
+      );
 
-    for (let i = 0; i < totalLines / 10; i++) {
-      lineMesh.setColorAt(i, selectedColor);
-    }
+      cityEdgeToIndex.set(coords, currentIndex);
+      currentIndex++;
+    });
 
     // Launch updates
     lineMesh.instanceMatrix.needsUpdate = true;
     lineMesh.instanceColor.needsUpdate = true;
     lineMesh.material.needsUpdate = true;
-  }, [segmentsProps, totalLines, cityEdgeToIndex]);
+
+    glowingLineMesh.instanceMatrix.needsUpdate = true;
+    glowingLineMesh.instanceColor.needsUpdate = true;
+    glowingLineMesh.material.needsUpdate = true;
+  }, [segmentsProps, cityEdgeToIndex]);
+
+  useEffect(() => {
+    let timeoutId;
+    const color = selectedColor;
+
+    const updateLinesSequentially = (index) => {
+      if (index < totalLines) {
+        changeLineColorByIndex(index, glowingLineMeshRef, color);
+        timeoutId = setTimeout(() => updateLinesSequentially(index + 1), 0);
+      }
+    };
+
+    updateLinesSequentially(0);
+
+    return () => {
+      // Clear the timeout if the component unmounts
+      clearTimeout(timeoutId);
+    };
+  });
 
   return (
     <>
@@ -202,7 +277,7 @@ const CityMap = ({ parsedLineData }) => {
         />
       </instancedMesh>
 
-      <instancedMesh>
+      <instancedMesh ref={glowingLineMeshRef} args={[null, null, totalLines]}>
         <shapeGeometry args={[lineBaseSeg]} />
         <meshBasicMaterial
           attach="material"
