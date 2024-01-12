@@ -208,7 +208,9 @@ const CityMap = ({ parsedLineData }) => {
         coords,
         computedData,
         currentIndex,
-        true
+        true,
+        0,
+        lineWidth
       );
       addLineToMesh(
         glowingLineMesh,
@@ -219,7 +221,7 @@ const CityMap = ({ parsedLineData }) => {
         currentIndex,
         true,
         0.00001,
-        0.0005,
+        lineWidth,
       );
 
       cityEdgeToIndex.set(coords, currentIndex);
