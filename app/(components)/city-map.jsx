@@ -239,27 +239,57 @@ const CityMap = ({ parsedLineData }) => {
   }, [segmentsProps, cityEdgeToIndex]);
 
   useEffect(() => {
-    let timeoutId;
+    if(!cityGraph.getVertexCount) return; // Graph is empty;
 
     const startCoords = cityGraph.getRandomStart();
+    const bfsQueue = [];
+    const predecessors = new Map();
 
-    return;
-    if (startCoords === null) return; // Not ready yet
+    cityGraph
+      .getVertex(...startCoords)
+      .getNeighbors()
+      .forEach((neighbor) => {
+        bfsQueue.push(neighbor);
+        predecessors.set(neighbor.node.getCoordinatesArray(), startCoords);
+      });
 
-    const updateLinesSequentially = (index) => {
-      if (index < totalLines) {
-        changeLineColorByIndex(index, glowingLineMeshRef, selectedColor);
-        timeoutId = setTimeout(() => updateLinesSequentially(index + 1), 0);
-      }
-    };
+    cityGraph.getVertex(...startCoords).setVisited = true;
 
-    updateLinesSequentially(0);
+    while (bfsQueue.length) {
+      const current_vertex = bfsQueue.shift();
+      const current_vertex_coords = current_vertex.node.getCoordinatesArray();
+      const previous_vertex_coords = predecessors.get(
+        current_vertex.node.getCoordinatesArray()
+      );
 
-    return () => {
-      // Clear the timeout if the component unmounts
-      clearTimeout(timeoutId);
-    };
-  });
+      const coordinates = [previous_vertex_coords, current_vertex_coords];
+
+      const current_edge = segmentsProps.get(coordinates);
+      const current_index = cityEdgeToIndex.get(coordinates);
+
+      addLineToMesh(
+        glowingLineMeshRef.current,
+        tempObject,
+        selectedColor,
+        coordinates,
+        current_edge.computedData,
+        current_index,
+        true,
+        0.00001,
+        0.0002
+      );
+
+      current_vertex.node.getNeighbors().forEach((neighbor) => {
+        if (!predecessors.has(neighbor.node.getCoordinatesArray())) {
+          bfsQueue.push(neighbor);
+          predecessors.set(
+            neighbor.node.getCoordinatesArray(),
+            current_vertex_coords
+          );
+        }
+      });
+    }
+  }, [cityGraph, segmentsProps, cityEdgeToIndex]);
 
   return (
     <>
