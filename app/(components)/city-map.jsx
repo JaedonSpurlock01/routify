@@ -219,7 +219,7 @@ const CityMap = ({ parsedLineData }) => {
         coords,
         computedData,
         currentIndex,
-        true,
+        false,
         0.00001,
         lineWidth
       );
