@@ -239,12 +239,13 @@ const CityMap = ({ parsedLineData }) => {
   }, [segmentsProps, cityEdgeToIndex]);
 
   useEffect(() => {
+    return;
     if (!cityGraph.getVertexCount) return; // Graph is empty;
 
     const startCoords = cityGraph.getRandomStart();
 
-    if(startCoords === null){
-      console.log("something isn't working right")
+    if (startCoords === null) {
+      console.log("something isn't working right");
       return;
     }
 
