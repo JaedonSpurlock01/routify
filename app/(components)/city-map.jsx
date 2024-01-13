@@ -221,7 +221,7 @@ const CityMap = ({ parsedLineData }) => {
         currentIndex,
         true,
         0.00001,
-        lineWidth,
+        lineWidth
       );
 
       cityEdgeToIndex.set(coords, currentIndex);
@@ -240,11 +240,15 @@ const CityMap = ({ parsedLineData }) => {
 
   useEffect(() => {
     let timeoutId;
-    const color = selectedColor;
+
+    const startCoords = cityGraph.getRandomStart();
+
+    return;
+    if (startCoords === null) return; // Not ready yet
 
     const updateLinesSequentially = (index) => {
       if (index < totalLines) {
-        changeLineColorByIndex(index, glowingLineMeshRef, color);
+        changeLineColorByIndex(index, glowingLineMeshRef, selectedColor);
         timeoutId = setTimeout(() => updateLinesSequentially(index + 1), 0);
       }
     };
