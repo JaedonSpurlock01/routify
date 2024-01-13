@@ -239,14 +239,20 @@ const CityMap = ({ parsedLineData }) => {
   }, [segmentsProps, cityEdgeToIndex]);
 
   useEffect(() => {
-    if(!cityGraph.getVertexCount) return; // Graph is empty;
+    if (!cityGraph.getVertexCount) return; // Graph is empty;
 
     const startCoords = cityGraph.getRandomStart();
+
+    if(startCoords === null){
+      console.log("something isn't working right")
+      return;
+    }
+
     const bfsQueue = [];
     const predecessors = new Map();
 
     cityGraph
-      .getVertex(...startCoords)
+      .getVertex(startCoords)
       .getNeighbors()
       .forEach((neighbor) => {
         bfsQueue.push(neighbor);
