@@ -1,7 +1,7 @@
 "use client";
 
 import { Graph } from "@/lib/graph";
-import { useLayoutEffect, useMemo, useRef, useEffect } from "react";
+import { useLayoutEffect, useMemo, useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 
 // Bloom effect imports
@@ -38,7 +38,7 @@ const CityMap = ({ parsedLineData }) => {
 
   // Will run only one time since dependency is empty, this prevents unwanted problems with useEffect
   const cityGraph = useMemo(() => new Graph(), []);
-  const cityEdgeToIndex = useMemo(() => new Map(), []); // [[x1, y1, z1], [x2, y2, z2]]: index
+  const cityEdgeToIndex = useMemo(() => new Map(), []);
 
   // Calculate the center of the map
   const center = useMemo(() => {
@@ -56,14 +56,9 @@ const CityMap = ({ parsedLineData }) => {
 
   // Generate segment properties
   const segmentsProps = useMemo(() => {
-    const segmentLineData = new Map();
+    const segmentLineData = [];
 
     parsedLineData.forEach(({ start, end }) => {
-      const coords = [
-        [start[0] - center.x, start[1] - center.y, 0],
-        [end[0] - center.x, end[1] - center.y, 0],
-      ];
-
       const segmentValue = {
         color: tempColor.setHex(lineColor).clone(),
         computedData: {
@@ -72,9 +67,13 @@ const CityMap = ({ parsedLineData }) => {
           dy: undefined,
           angle: undefined,
         },
+        coords: [
+          [start[0] - center.x, start[1] - center.y, 0],
+          [end[0] - center.x, end[1] - center.y, 0],
+        ],
       };
 
-      segmentLineData.set(coords, segmentValue);
+      segmentLineData.push(segmentValue);
     });
 
     return segmentLineData;
@@ -100,7 +99,7 @@ const CityMap = ({ parsedLineData }) => {
         false
       );
     });
-    cityGraph.printAll(); // <- very laggy with bigger cities, can sometimes crash website
+    // cityGraph.printAll(); // <- very laggy with bigger cities, can sometimes crash website
   }, [parsedLineData, cityGraph, center.x, center.y]);
 
   function addLineToMesh(
@@ -114,6 +113,8 @@ const CityMap = ({ parsedLineData }) => {
     z_index = 0,
     lineWidth = 0.0001
   ) {
+    if (!lineMesh) return;
+
     const x1 = coords[0][0];
     const y1 = coords[0][1];
     const x2 = coords[1][0];
@@ -149,6 +150,10 @@ const CityMap = ({ parsedLineData }) => {
 
     lineMesh.setMatrixAt(index, tempObject.matrix);
     lineMesh.setColorAt(index, color);
+
+    lineMesh.instanceColor.needsUpdate = true;
+    lineMesh.instanceMatrix.needsUpdate = true;
+    lineMesh.material.needsUpdate = true;
   }
 
   function makeLineVisible(edgeCoords, lineMeshRef) {
@@ -197,9 +202,10 @@ const CityMap = ({ parsedLineData }) => {
     let currentIndex = 0;
 
     // Modify every segment in the map of lines
-    segmentsProps.forEach((segment, coords) => {
+    segmentsProps.forEach((segment) => {
       const color = segment.color;
       const computedData = segment.computedData;
+      const coords = segment.coords;
 
       addLineToMesh(
         lineMesh,
@@ -224,7 +230,8 @@ const CityMap = ({ parsedLineData }) => {
         lineWidth
       );
 
-      cityEdgeToIndex.set(coords, currentIndex);
+      const stringCoords = `[${coords[0][0]},${coords[0][1]},${coords[0][2]}],[${coords[1][0]},${coords[1][1]},${coords[1][2]}]`;
+      cityEdgeToIndex.set(stringCoords, currentIndex);
       currentIndex++;
     });
 
@@ -239,11 +246,9 @@ const CityMap = ({ parsedLineData }) => {
   }, [segmentsProps, cityEdgeToIndex]);
 
   useEffect(() => {
-    return;
-    if (!cityGraph.getVertexCount) return; // Graph is empty;
+    if (!cityGraph.getVertexCount()) return;
 
     const startCoords = cityGraph.getRandomStart();
-
     if (startCoords === null) {
       console.log("something isn't working right");
       return;
@@ -257,45 +262,61 @@ const CityMap = ({ parsedLineData }) => {
       .getNeighbors()
       .forEach((neighbor) => {
         bfsQueue.push(neighbor);
-        predecessors.set(neighbor.node.getCoordinatesArray(), startCoords);
+        predecessors.set(neighbor.node.createCompositeKey(), startCoords);
       });
 
-    cityGraph.getVertex(...startCoords).setVisited = true;
+    cityGraph.getVertex(startCoords).setVisited(true);
 
-    while (bfsQueue.length) {
+    const processQueue = () => {
+      if (!bfsQueue.length) return;
+
       const current_vertex = bfsQueue.shift();
-      const current_vertex_coords = current_vertex.node.getCoordinatesArray();
-      const previous_vertex_coords = predecessors.get(
-        current_vertex.node.getCoordinatesArray()
-      );
+      current_vertex.node.setVisited(true);
 
-      const coordinates = [previous_vertex_coords, current_vertex_coords];
+      const current_vertex_coords = current_vertex.node.createCompositeKey();
+      const previous_vertex_coords = predecessors.get(current_vertex_coords);
 
-      const current_edge = segmentsProps.get(coordinates);
-      const current_index = cityEdgeToIndex.get(coordinates);
+      const coordinates1 = `[${current_vertex_coords}],[${previous_vertex_coords}]`;
+      const coordinates2 = `[${previous_vertex_coords}],[${current_vertex_coords}]`;
 
-      addLineToMesh(
-        glowingLineMeshRef.current,
-        tempObject,
-        selectedColor,
-        coordinates,
-        current_edge.computedData,
-        current_index,
-        true,
-        0.00001,
-        0.0002
-      );
+      const current_index =
+        cityEdgeToIndex.get(coordinates1) ?? cityEdgeToIndex.get(coordinates2);
+      const current_edge = segmentsProps[current_index];
 
-      current_vertex.node.getNeighbors().forEach((neighbor) => {
-        if (!predecessors.has(neighbor.node.getCoordinatesArray())) {
-          bfsQueue.push(neighbor);
-          predecessors.set(
-            neighbor.node.getCoordinatesArray(),
-            current_vertex_coords
-          );
-        }
-      });
-    }
+      console.log(current_index);
+      console.log(current_edge);
+
+      if (current_edge) {
+        addLineToMesh(
+          glowingLineMeshRef.current,
+          tempObject,
+          selectedColor,
+          current_edge.coords,
+          current_edge.computedData,
+          current_index,
+          true,
+          0.00001,
+          0.0002
+        );
+
+        current_vertex.node.getNeighbors().forEach((neighbor) => {
+          if (!predecessors.has(neighbor.node.createCompositeKey())) {
+            if (!neighbor.node.getVisited()) {
+              bfsQueue.push(neighbor);
+              predecessors.set(
+                neighbor.node.createCompositeKey(),
+                current_vertex_coords
+              );
+            }
+          }
+        });
+      }
+
+      // Call processQueue again after a delay
+      setTimeout(processQueue, 1); // Adjust the delay time as needed
+    };
+
+    processQueue();
   }, [cityGraph, segmentsProps, cityEdgeToIndex]);
 
   return (
