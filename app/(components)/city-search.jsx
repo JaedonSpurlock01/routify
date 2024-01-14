@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { RotatingLines } from "react-loader-spinner";
 
-import jsonData from "@/lib/test-cities/marion-ohio.json";
+import jsonData from "@/lib/test-cities/san-diego.json";
 
 export const CitySearch = ({ setMapIsReady, setParsedLineData }) => {
   const [enteredInput, setEnteredInput] = useState("");
