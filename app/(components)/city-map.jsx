@@ -94,13 +94,13 @@ const CityMap = ({ parsedLineData }) => {
         cityGraph.addVertex(...vertex2Coords);
       }
       cityGraph.addEdgeWithCoords(
-        vertex1Coords,
-        vertex2Coords,
+        ...vertex1Coords,
+        ...vertex2Coords,
         cityGraph.calculateDistance(...vertex1Coords, ...vertex2Coords),
         false
       );
     });
-    // cityGraph.printAll(); // <- very laggy with bigger cities, can sometimes crash website
+    cityGraph.printAll(); // <- very laggy with bigger cities, can sometimes crash website
   }, [parsedLineData, cityGraph, center.x, center.y]);
 
   function addLineToMesh(
