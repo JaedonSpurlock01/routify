@@ -9,10 +9,8 @@ import { KernelSize, Resolution } from "postprocessing";
 
 // Library functions to handle map data
 import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
-import {
-  breadthFirstSearch,
-  depthFirstSearch,
-} from "@/lib/algorithms/breadth-first-search";
+import { breadthFirstSearch } from "@/lib/algorithms/breadth-first-search";
+import { depthFirstSearch } from "@/lib/algorithms/depth-first-search";
 import { Graph } from "@/lib/graph";
 import {
   generateSegmentProperties,
@@ -69,7 +67,7 @@ const CityMap = ({ parsedLineData }) => {
 
   // Temporary function to test visual BFS, will be removed later
   useEffect(() => {
-    breadthFirstSearch(cityGraph, topLayerScene, glowingLineMeshRef);
+    depthFirstSearch(cityGraph, topLayerScene, glowingLineMeshRef);
   }, [cityGraph, topLayerScene]);
 
   return (
