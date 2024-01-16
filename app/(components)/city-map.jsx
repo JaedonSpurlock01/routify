@@ -1,29 +1,23 @@
 "use client";
 
-import { Graph } from "@/lib/graph";
 import { useLayoutEffect, useMemo, useRef, useEffect } from "react";
+
+// threeJS
 import * as THREE from "three";
-
-// Bloom effect imports
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
-import { BlurPass, Resizer, KernelSize, Resolution } from "postprocessing";
-
-// Define line geometry
-const lineBaseSegment = new THREE.Shape();
-lineBaseSegment.moveTo(0, 0.5);
-lineBaseSegment.lineTo(1, 0.5);
-lineBaseSegment.lineTo(1, -0.5);
-lineBaseSegment.lineTo(0, -0.5);
-lineBaseSegment.lineTo(0, 0.5);
+import { KernelSize, Resolution } from "postprocessing";
 
 // Library functions to handle map data
+import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
+import {
+  breadthFirstSearch,
+  depthFirstSearch,
+} from "@/lib/algorithms/breadth-first-search";
+import { Graph } from "@/lib/graph";
 import {
   generateSegmentProperties,
   calculateMapCenter,
 } from "@/lib/utilities/mapUtils";
-
-import { SceneObject } from "@/lib/utilities/sceneUtils";
-import { breadthFirstSearch } from "@/lib/algorithms/breadth-first-search";
 
 const CityMap = ({ parsedLineData }) => {
   // Define ref to update the lines
