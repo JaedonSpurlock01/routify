@@ -28,7 +28,7 @@ import { Dot } from "./dot";
 
 var viewport = new THREE.Vector2();
 
-const CityMap = ({ parsedLineData, pointEventData }) => {
+const CityMap = ({ parsedLineData }) => {
   // Define ref to update the lines
   const lineMeshRef = useRef();
   const glowingLineMeshRef = useRef();
@@ -49,46 +49,60 @@ const CityMap = ({ parsedLineData, pointEventData }) => {
   }
 
   // Add either a start dot or a end dot to the scene
-  const addDot = useCallback(
-    (coordinates) => {
-      console.log(coordinates);
+  const addDot = (coordinates) => {
+    // Get the closest graph node based on coordinates
+    const closestNode = cityGraph.findNearestVertex(
+      coordinates.x,
+      coordinates.y,
+      0
+    );
 
-      // Get the closest graph node based on coordinates
-      const closestNode = cityGraph.findNearestVertex(
-        coordinates.x,
-        coordinates.y,
-        0
-      );
+    const tempColor = new THREE.Color();
 
-      console.log(closestNode.x, closestNode.y, closestNode.z);
+    setDots([
+      ...dots,
+      {
+        x: closestNode.x,
+        y: closestNode.y,
+        color: tempColor.setHex(0xfc2d49).clone(),
+      },
+    ]);
 
-      return;
+    return;
+    if (!dots.length) {
+      // Start node
+      console.log("Adding start dot!");
+      setStartNode(closestNode);
+      setDots([{ x: closestNode.x, y: closestNode.y, color: 0x42f587 }]);
+    } else if (dots.length === 1) {
+      // End Node
+      console.log("Adding end dot!");
+      setEndNode(closestNode);
+      setDots([
+        ...dots,
+        { x: closestNode.x, y: closestNode.y, color: 0xfc2d49 },
+      ]);
+    }
+  };
 
-      if (!dots.length) {
-        // Start node
-        console.log("Adding start dot!");
-        setStartNode(closestNode);
-        setDots([{ x, y, color: "green" }]);
-      } else if (dots.length === 1) {
-        // End Node
-        console.log("Adding end dot!");
-        setEndNode(closestNode);
-        setDots([...dots, { x, y, color: "red" }]);
-      }
-    },
-    [cityGraph, dots]
-  );
+  const handleClick = (event) => {
+    if (!event) return;
 
-  useEffect(() => {
-    if (!pointEventData) return;
-
-    viewport.x = (pointEventData.clientX / window.innerWidth) * 2 - 1;
-    viewport.y = -((pointEventData.clientY / window.innerHeight) * 2) + 1;
+    viewport.x = (event.clientX / window.innerWidth) * 2 - 1;
+    viewport.y = -((event.clientY / window.innerHeight) * 2) + 1;
 
     let canvasMousePos = worldPointFromScreenPoint(viewport, camera);
 
     addDot(canvasMousePos);
-  }, [pointEventData, addDot, camera]);
+  };
+
+  useEffect(() => {
+    addEventListener("dblclick", handleClick);
+
+    return () => {
+      removeEventListener("dblclick", handleClick);
+    };
+  }, []);
 
   // Calculate the center of the map
   const center = useMemo(

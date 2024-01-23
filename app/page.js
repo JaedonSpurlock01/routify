@@ -11,7 +11,6 @@ import { NavBar } from "./(components)/nav-bar";
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);
   const [parsedLineData, setParsedLineData] = useState([]);
-  const [pointEventData, setPointEventData] = useState(null);
 
   return (
     <>
@@ -35,13 +34,9 @@ export default function Home() {
             onCreated={({ gl }) => {
               gl.setClearColor("#2B2F33");
             }}
-            onDoubleClick={(e) => {
-              setPointEventData(e);
-            }}
           >
             <CityMap
               parsedLineData={parsedLineData}
-              pointEventData={pointEventData}
             />
             <OrbitControls
               enableDamping={true}

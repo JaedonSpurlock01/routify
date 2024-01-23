@@ -4,8 +4,8 @@ import * as THREE from "three";
 export const Dot = ({ position, color }) => {
   return (
     <mesh position={position}>
-      <sphereBufferGeometry args={[0.05, 32, 32]} />
-      <meshStandardMaterial color={color} />
+      <sphereGeometry args={[0.0006, 32, 32]} />
+      <meshStandardMaterial color={0xa3a3a3} />
     </mesh>
   );
 };
