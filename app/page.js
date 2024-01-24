@@ -32,7 +32,7 @@ export default function Home() {
               aspect: window.innerWidth / window.innerHeight,
             }}
             onCreated={({ gl }) => {
-              gl.setClearColor("#2B2F33");
+              gl.setClearColor("#2B2F33"); // Scene background color
             }}
           >
             <CityMap

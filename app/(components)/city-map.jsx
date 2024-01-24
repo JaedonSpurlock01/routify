@@ -50,12 +50,10 @@ const CityMap = ({ parsedLineData }) => {
 
     if (!dots.length) {
       // Start node
-      console.log("Adding start dot!");
       setStartNode(closestNode);
       setDots([{ x: closestNode.x, y: closestNode.y, color: 0x42f587 }]);
     } else if (dots.length === 1) {
       // End Node
-      console.log("Adding end dot!");
       setEndNode(closestNode);
       setDots((dots) => [
         ...dots,
