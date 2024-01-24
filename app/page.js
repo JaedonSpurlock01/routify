@@ -8,6 +8,10 @@ import { useState } from "react";
 import { CitySearch } from "./(components)/city-search";
 import { NavBar } from "./(components)/nav-bar";
 
+import Image from "next/image";
+
+import backgroundImg from "@/public/background.jpg";
+
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);
   const [parsedLineData, setParsedLineData] = useState([]);
@@ -15,12 +19,20 @@ export default function Home() {
   return (
     <>
       {!mapIsReady && (
-        <div className="h-screen w-screen items-center flex flex-col justify-center">
-          <CitySearch
-            setMapIsReady={setMapIsReady}
-            setParsedLineData={setParsedLineData}
+        <>
+          <Image
+            src={backgroundImg}
+            alt="Background"
+            quality={95}
+            className="absolute h-screen w-screen -z-10 opacity-50"
           />
-        </div>
+          <div className="h-screen w-screen items-center flex flex-col justify-center">
+            <CitySearch
+              setMapIsReady={setMapIsReady}
+              setParsedLineData={setParsedLineData}
+            />
+          </div>
+        </>
       )}
       {mapIsReady && (
         <div className="h-screen w-screen relative">
@@ -35,9 +47,7 @@ export default function Home() {
               gl.setClearColor("#2B2F33"); // Scene background color
             }}
           >
-            <CityMap
-              parsedLineData={parsedLineData}
-            />
+            <CityMap parsedLineData={parsedLineData} />
             <OrbitControls
               enableDamping={true}
               enableRotate={false}
