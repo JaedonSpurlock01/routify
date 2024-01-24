@@ -5,7 +5,6 @@ import {
   useMemo,
   useRef,
   useEffect,
-  useCallback,
   useState,
 } from "react";
 
@@ -23,6 +22,7 @@ import { Graph } from "@/lib/graph";
 import {
   generateSegmentProperties,
   calculateMapCenter,
+  worldPointFromScreenPoint,
 } from "@/lib/utilities/mapUtils";
 import { Dot } from "./dot";
 
@@ -39,15 +39,6 @@ const CityMap = ({ parsedLineData }) => {
 
   const { camera } = useThree();
 
-  function worldPointFromScreenPoint(screenPoint, camera) {
-    let worldPoint = new THREE.Vector3();
-    worldPoint.x = screenPoint.x;
-    worldPoint.y = screenPoint.y;
-    worldPoint.z = 0;
-    worldPoint.unproject(camera);
-    return worldPoint;
-  }
-
   // Add either a start dot or a end dot to the scene
   const addDot = (coordinates) => {
     // Get the closest graph node based on coordinates
@@ -57,18 +48,6 @@ const CityMap = ({ parsedLineData }) => {
       0
     );
 
-    const tempColor = new THREE.Color();
-
-    setDots([
-      ...dots,
-      {
-        x: closestNode.x,
-        y: closestNode.y,
-        color: tempColor.setHex(0xfc2d49).clone(),
-      },
-    ]);
-
-    return;
     if (!dots.length) {
       // Start node
       console.log("Adding start dot!");
@@ -78,7 +57,7 @@ const CityMap = ({ parsedLineData }) => {
       // End Node
       console.log("Adding end dot!");
       setEndNode(closestNode);
-      setDots([
+      setDots((dots) => [
         ...dots,
         { x: closestNode.x, y: closestNode.y, color: 0xfc2d49 },
       ]);
@@ -102,7 +81,7 @@ const CityMap = ({ parsedLineData }) => {
     return () => {
       removeEventListener("dblclick", handleClick);
     };
-  }, []);
+  });
 
   // Calculate the center of the map
   const center = useMemo(
@@ -125,11 +104,11 @@ const CityMap = ({ parsedLineData }) => {
   const topLayerScene = useMemo(
     () =>
       new SceneObject(
-        0x2effc0,
+        0xe8c497,
         0.0002,
         0.00001,
         parsedLineData.length,
-        generateSegmentProperties(parsedLineData, center, 0x2effc0)
+        generateSegmentProperties(parsedLineData, center, 0xe8c497)
       ),
     [parsedLineData, center]
   );
@@ -165,6 +144,8 @@ const CityMap = ({ parsedLineData }) => {
           resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
         />
       </EffectComposer>
+
+      <ambientLight intensity={10} />
 
       <instancedMesh
         ref={lineMeshRef}
