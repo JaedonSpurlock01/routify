@@ -1,15 +1,17 @@
 import parseLineData from "@/lib/parsing";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { RotatingLines } from "react-loader-spinner";
 
 import jsonData from "@/lib/test-cities/san-diego.json";
+import { ThreeContext } from "@/lib/context/three.context";
 
-export const CitySearch = ({ setMapIsReady, setParsedLineData }) => {
+export const CitySearch = ({ setMapIsReady }) => {
   const [enteredInput, setEnteredInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [suggestionsLoaded, setSuggestionsLoaded] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const { setParsedLineData } = useContext(ThreeContext);
 
   const onSubmit = async (e) => {
     e.preventDefault();

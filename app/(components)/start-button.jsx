@@ -1,32 +1,61 @@
-import React, { useState } from "react";
+import { AlgorithmContext } from "@/lib/context/algorithm.context";
+import React, { useContext, useState } from "react";
 
 import { IoMdPlay, IoIosPause } from "react-icons/io";
 
 export const StartButton = () => {
-  const [isToggled, setIsToggled] = useState(false);
+  const {
+    startNode,
+    endNode,
+    setIsPaused,
+    isPaused,
+    isStopped,
+    setIsStopped,
+    isStarting,
+    setIsStarting,
+    isAlgorithmReady,
+    setIsAlgorithmReady,
+  } = useContext(AlgorithmContext);
 
   const handleButtonToggle = () => {
-    console.log("SENDING EVENT EMIT");
+    // Guard clause for missing start or end points
+    if (!startNode || !endNode) {
+      console.log("Please put a start and end point to start the algorithm");
+      return;
+    }
+
+    // Algorithm is ready to start
+    if (!isStarting && !isPaused && !isAlgorithmReady && isStopped) {
+      setIsAlgorithmReady(true);
+      setIsPaused(false);
+      setIsStopped(false);
+      setIsStarting(true);
+      return;
+    }
+
+    // Toggle between paused and starting
+    if (isStarting !== isPaused) {
+      setIsPaused(!isPaused);
+      setIsStarting(!isStarting);
+      return;
+    }
+
+    // If none of the above conditions are met, log an error
+    console.log("Something went wrong here...?");
   };
 
   return (
     <>
-      {!isToggled ? (
+      {!isStarting ? (
         <button
-          onClick={() => {
-            setIsToggled(true);
-            handleButtonToggle();
-          }}
+          onClick={handleButtonToggle}
           className="rounded-full bg-[#46b780] p-4 text-2xl text-neutral-100 w-14 h-14 hover:shadow-lg hover:shadow-neutral-800 transition-all"
         >
           <IoMdPlay className="ml-[0.2rem]" />
         </button>
       ) : (
         <button
-          onClick={() => {
-            setIsToggled(false);
-            handleButtonToggle();
-          }}
+          onClick={handleButtonToggle}
           className="rounded-full bg-[#525252] p-4 text-2xl text-neutral-100 w-14 h-14 hover:shadow-lg hover:shadow-neutral-800 transition-all"
         >
           <IoIosPause />

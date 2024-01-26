@@ -1,38 +1,44 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef, useEffect, useState } from "react";
+import { useLayoutEffect, useMemo, useState, useContext } from "react";
 
 // threeJS
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { KernelSize, Resolution } from "postprocessing";
 import { useThree } from "@react-three/fiber";
-import { useEventListener } from "ahooks";
 
 // Library functions to handle map data
 import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
-import { breadthFirstSearch } from "@/lib/algorithms/breadth-first-search";
-import { depthFirstSearch } from "@/lib/algorithms/depth-first-search";
-import { Graph } from "@/lib/graph";
 import {
   generateSegmentProperties,
   calculateMapCenter,
   worldPointFromScreenPoint,
 } from "@/lib/utilities/mapUtils";
 import { Dot } from "./dot";
+import { AlgorithmContext } from "@/lib/context/algorithm.context";
+import { useEventListener } from "ahooks";
+import { ThreeContext } from "@/lib/context/three.context";
 
-var viewport = new THREE.Vector2();
+let viewport = new THREE.Vector2();
 
-const CityMap = ({ parsedLineData }) => {
-  // Define ref to update the lines
-  const lineMeshRef = useRef();
-  const glowingLineMeshRef = useRef();
-  const cityGraph = useMemo(() => new Graph(), []);
+const CityMap = () => {
   const [dots, setDots] = useState([]);
-  const [startNode, setStartNode] = useState(null);
-  const [endNode, setEndNode] = useState(null);
-
+  const { setStartNode, setEndNode, cityGraph } = useContext(AlgorithmContext);
+  const {
+    glowingLineMeshRef,
+    lineMeshRef,
+    baseLayerSceneRef,
+    topLayerSceneRef,
+    parsedLineData,
+  } = useContext(ThreeContext);
   const { camera } = useThree();
+
+  // Calculate center of map
+  const center = useMemo(
+    () => calculateMapCenter(parsedLineData),
+    [parsedLineData]
+  );
 
   // Add either a start dot or a end dot to the scene
   const addDot = (coordinates) => {
@@ -67,55 +73,52 @@ const CityMap = ({ parsedLineData }) => {
 
     addDot(canvasMousePos);
   };
-
   useEventListener("dblclick", handleClick);
 
-  // Calculate the center of the map
-  const center = useMemo(
-    () => calculateMapCenter(parsedLineData),
-    [parsedLineData]
-  );
-
-  const baseLayerScene = useMemo(
-    () =>
-      new SceneObject(
+  useLayoutEffect(() => {
+    // Set up threeJS map layers (base -> gray, top -> pathfinding layer)
+    if (!baseLayerSceneRef.current) {
+      baseLayerSceneRef.current = new SceneObject(
         0x83888c,
         0.0001,
         0,
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, 0x83888c)
-      ),
-    [parsedLineData, center]
-  );
+      );
+    }
 
-  const topLayerScene = useMemo(
-    () =>
-      new SceneObject(
+    if (!topLayerSceneRef.current) {
+      topLayerSceneRef.current = new SceneObject(
         0xe8c497,
         0.0002,
         0.00001,
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, 0xe8c497)
-      ),
-    [parsedLineData, center]
-  );
+      );
+    }
 
-  // Convert city data into graph data structure
-  useEffect(() => {
+    // Add lines to ThreeJS scene
+    baseLayerSceneRef.current.updateScene(lineMeshRef, null, true);
+    topLayerSceneRef.current.updateScene(
+      glowingLineMeshRef,
+      cityGraph.edgeToIndex,
+      false
+    );
+
+    // Fill the graph data structure
     cityGraph.setCenter(center.x, center.y);
     cityGraph.fillGraph(parsedLineData);
-  }, [parsedLineData, cityGraph, center.x, center.y]);
-
-  // Add lines to the threeJS scene
-  useLayoutEffect(() => {
-    baseLayerScene.updateScene(lineMeshRef, null, true);
-    topLayerScene.updateScene(glowingLineMeshRef, cityGraph.edgeToIndex, false);
-  }, [cityGraph, baseLayerScene, topLayerScene]);
-
-  useSubscription("start", () => {
-    console.log("TESTING");
-    breadthFirstSearch(cityGraph, topLayerScene, glowingLineMeshRef);
-  });
+  }, [
+    baseLayerSceneRef,
+    topLayerSceneRef,
+    center.x,
+    center.y,
+    cityGraph,
+    glowingLineMeshRef,
+    lineMeshRef,
+    parsedLineData,
+    center,
+  ]);
 
   return (
     <>
