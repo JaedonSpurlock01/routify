@@ -1,5 +1,8 @@
-import { AlgorithmContext } from "@/lib/context/algorithm.context";
-import React, { useContext, useState } from "react";
+import {
+  AlgorithmContext,
+  stopAlgorithm,
+} from "@/lib/context/algorithm.context";
+import React, { useContext } from "react";
 
 import { IoMdPlay, IoIosPause } from "react-icons/io";
 
@@ -28,8 +31,9 @@ export const StartButton = () => {
     if (!isStarting && !isPaused && !isAlgorithmReady && isStopped) {
       setIsAlgorithmReady(true);
       setIsPaused(false);
-      setIsStopped(false);
       setIsStarting(true);
+      setIsStopped(false);
+      stopAlgorithm(false);
       return;
     }
 
@@ -37,6 +41,7 @@ export const StartButton = () => {
     if (isStarting !== isPaused) {
       setIsPaused(!isPaused);
       setIsStarting(!isStarting);
+      stopAlgorithm(true);
       return;
     }
 

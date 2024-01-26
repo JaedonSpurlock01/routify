@@ -13,6 +13,7 @@ import Image from "next/image";
 import backgroundImg from "@/public/background.jpg";
 import { AlgorithmContextProvider } from "@/lib/context/algorithm.context";
 import { ThreeContextProvider } from "@/lib/context/three.context";
+import { AlgorithmController } from "./(components)/algorithm-controller";
 
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);
@@ -59,6 +60,7 @@ export default function Home() {
               />
             </Canvas>
             <NavBar />
+            <AlgorithmController />
           </div>
         )}
       </AlgorithmContextProvider>

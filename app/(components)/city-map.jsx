@@ -1,6 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useState, useContext } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useState,
+  useContext,
+  useEffect,
+} from "react";
 
 // threeJS
 import * as THREE from "three";
@@ -24,7 +30,15 @@ let viewport = new THREE.Vector2();
 
 const CityMap = () => {
   const [dots, setDots] = useState([]);
-  const { setStartNode, setEndNode, cityGraph } = useContext(AlgorithmContext);
+  const {
+    setStartNode,
+    setEndNode,
+    cityGraph,
+    setIsAlgorithmReady,
+    setIsStarting,
+    setIsPaused,
+    setIsStopped,
+  } = useContext(AlgorithmContext);
   const {
     glowingLineMeshRef,
     lineMeshRef,
@@ -32,6 +46,7 @@ const CityMap = () => {
     topLayerSceneRef,
     parsedLineData,
   } = useContext(ThreeContext);
+  const { clearAll, setClearAll } = useContext(AlgorithmContext);
   const { camera } = useThree();
 
   // Calculate center of map
@@ -118,6 +133,38 @@ const CityMap = () => {
     lineMeshRef,
     parsedLineData,
     center,
+  ]);
+
+  useEffect(() => {
+    if (clearAll) {
+      setDots([]);
+      setStartNode(null);
+      setEndNode(null);
+      setClearAll(false);
+
+      setIsAlgorithmReady(false);
+      setIsStarting(false);
+      setIsPaused(false);
+      setIsStopped(true);
+
+      topLayerSceneRef.current.updateScene(
+        glowingLineMeshRef,
+        cityGraph.edgeToIndex,
+        false
+      );
+    }
+  }, [
+    clearAll,
+    setClearAll,
+    setStartNode,
+    setEndNode,
+    setIsAlgorithmReady,
+    setIsStarting,
+    setIsPaused,
+    topLayerSceneRef,
+    cityGraph,
+    glowingLineMeshRef,
+    setIsStopped
   ]);
 
   return (

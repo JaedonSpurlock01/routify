@@ -3,6 +3,12 @@ import { Graph } from "../graph";
 
 export const AlgorithmContext = createContext();
 
+export let algorithmStopped = false;
+
+export const stopAlgorithm = (bool) => {
+  algorithmStopped = bool;
+}
+
 export const AlgorithmContextProvider = ({ children }) => {
   const [currentAlgorithm, setCurrentAlgorithm] = useState("");
   const [isAlgorithmReady, setIsAlgorithmReady] = useState(false);
@@ -11,6 +17,7 @@ export const AlgorithmContextProvider = ({ children }) => {
   const [isStopped, setIsStopped] = useState(true);
   const [startNode, setStartNode] = useState(null);
   const [endNode, setEndNode] = useState(null);
+  const [clearAll, setClearAll] = useState(false);
 
   const cityGraph = useMemo(() => new Graph(), []);
 
@@ -21,8 +28,6 @@ export const AlgorithmContextProvider = ({ children }) => {
     setIsAlgorithmReady,
     isPaused,
     setIsPaused,
-    isStopped,
-    setIsStopped,
     startNode,
     setStartNode,
     endNode,
@@ -30,6 +35,10 @@ export const AlgorithmContextProvider = ({ children }) => {
     isStarting,
     setIsStarting,
     cityGraph,
+    clearAll,
+    setClearAll,
+    setIsStopped,
+    isStopped
   };
 
   return (
