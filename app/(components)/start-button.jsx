@@ -3,13 +3,19 @@ import React, { useState } from "react";
 import { IoMdPlay, IoIosPause } from "react-icons/io";
 
 export const StartButton = () => {
-  const [isClicked, setIsClicked] = useState(false);
+  const [isToggled, setIsToggled] = useState(false);
+
+  const handleButtonToggle = () => {
+    console.log("SENDING EVENT EMIT");
+  };
+
   return (
     <>
-      {!isClicked ? (
+      {!isToggled ? (
         <button
           onClick={() => {
-            setIsClicked(true);
+            setIsToggled(true);
+            handleButtonToggle();
           }}
           className="rounded-full bg-[#46b780] p-4 text-2xl text-neutral-100 w-14 h-14 hover:shadow-lg hover:shadow-neutral-800 transition-all"
         >
@@ -18,7 +24,8 @@ export const StartButton = () => {
       ) : (
         <button
           onClick={() => {
-            setIsClicked(false);
+            setIsToggled(false);
+            handleButtonToggle();
           }}
           className="rounded-full bg-[#525252] p-4 text-2xl text-neutral-100 w-14 h-14 hover:shadow-lg hover:shadow-neutral-800 transition-all"
         >

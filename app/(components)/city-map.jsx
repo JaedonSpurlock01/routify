@@ -1,18 +1,13 @@
 "use client";
 
-import {
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useEffect,
-  useState,
-} from "react";
+import { useLayoutEffect, useMemo, useRef, useEffect, useState } from "react";
 
 // threeJS
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { KernelSize, Resolution } from "postprocessing";
 import { useThree } from "@react-three/fiber";
+import { useEventListener } from "ahooks";
 
 // Library functions to handle map data
 import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
@@ -73,13 +68,7 @@ const CityMap = ({ parsedLineData }) => {
     addDot(canvasMousePos);
   };
 
-  useEffect(() => {
-    addEventListener("dblclick", handleClick);
-
-    return () => {
-      removeEventListener("dblclick", handleClick);
-    };
-  });
+  useEventListener("dblclick", handleClick);
 
   // Calculate the center of the map
   const center = useMemo(
@@ -123,10 +112,10 @@ const CityMap = ({ parsedLineData }) => {
     topLayerScene.updateScene(glowingLineMeshRef, cityGraph.edgeToIndex, false);
   }, [cityGraph, baseLayerScene, topLayerScene]);
 
-  // Temporary function to test visual BFS, will be removed later
-  useEffect(() => {
-    depthFirstSearch(cityGraph, topLayerScene, glowingLineMeshRef);
-  }, [cityGraph, topLayerScene]);
+  useSubscription("start", () => {
+    console.log("TESTING");
+    breadthFirstSearch(cityGraph, topLayerScene, glowingLineMeshRef);
+  });
 
   return (
     <>

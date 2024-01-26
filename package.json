@@ -12,6 +12,7 @@
     "@react-three/drei": "^9.92.7",
     "@react-three/fiber": "^8.15.12",
     "@react-three/postprocessing": "^2.15.11",
+    "ahooks": "^3.7.8",
     "express": "^4.18.2",
     "mongodb": "^6.3.0",
     "mongoose": "^8.0.4",

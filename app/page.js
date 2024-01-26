@@ -11,6 +11,7 @@ import { NavBar } from "./(components)/nav-bar";
 import Image from "next/image";
 
 import backgroundImg from "@/public/background.jpg";
+import { AlgorithmContextProvider } from "@/lib/context/algorithm.context";
 
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);
@@ -35,32 +36,34 @@ export default function Home() {
         </>
       )}
       {mapIsReady && (
-        <div className="h-screen w-screen relative">
-          <Canvas
-            camera={{
-              position: [0, 0, 0.1],
-              near: 0.001,
-              far: 1000,
-              aspect: window.innerWidth / window.innerHeight,
-            }}
-            onCreated={({ gl }) => {
-              gl.setClearColor("#2B2F33"); // Scene background color
-            }}
-          >
-            <CityMap parsedLineData={parsedLineData} />
-            <OrbitControls
-              enableDamping={true}
-              enableRotate={false}
-              enablePan={true}
-              mouseButtons={{
-                LEFT: THREE.MOUSE.PAN,
-                MIDDLE: THREE.MOUSE.DOLLY,
-                RIGHT: THREE.MOUSE.ROTATE,
+        <AlgorithmContextProvider>
+          <div className="h-screen w-screen relative">
+            <Canvas
+              camera={{
+                position: [0, 0, 0.1],
+                near: 0.001,
+                far: 1000,
+                aspect: window.innerWidth / window.innerHeight,
               }}
-            />
-          </Canvas>
-          <NavBar />
-        </div>
+              onCreated={({ gl }) => {
+                gl.setClearColor("#2B2F33"); // Scene background color
+              }}
+            >
+              <CityMap parsedLineData={parsedLineData} />
+              <OrbitControls
+                enableDamping={true}
+                enableRotate={false}
+                enablePan={true}
+                mouseButtons={{
+                  LEFT: THREE.MOUSE.PAN,
+                  MIDDLE: THREE.MOUSE.DOLLY,
+                  RIGHT: THREE.MOUSE.ROTATE,
+                }}
+              />
+            </Canvas>
+            <NavBar />
+          </div>
+        </AlgorithmContextProvider>
       )}
     </>
   );
