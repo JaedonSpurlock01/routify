@@ -4,13 +4,19 @@ import { ThreeContext } from "@/lib/context/three.context";
 import { useEffect, useContext } from "react";
 
 export const AlgorithmController = () => {
-  const { currentAlgorithm, isAlgorithmReady, cityGraph } =
+  const { currentAlgorithm, isAlgorithmReady, cityGraph, startNode, endNode } =
     useContext(AlgorithmContext);
   const { glowingLineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
 
   useEffect(() => {
     if (isAlgorithmReady) {
-      breadthFirstSearch(cityGraph, topLayerSceneRef, glowingLineMeshRef);
+      breadthFirstSearch(
+        cityGraph,
+        topLayerSceneRef,
+        glowingLineMeshRef,
+        startNode,
+        endNode
+      );
     }
   }, [
     currentAlgorithm,

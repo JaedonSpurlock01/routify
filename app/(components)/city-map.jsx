@@ -164,12 +164,12 @@ const CityMap = () => {
     topLayerSceneRef,
     cityGraph,
     glowingLineMeshRef,
-    setIsStopped
+    setIsStopped,
   ]);
 
   return (
     <>
-      <EffectComposer>
+      {/* <EffectComposer>
         <Bloom
           selection={glowingLineMeshRef}
           intensity={1.5} // The bloom intensity.
@@ -180,7 +180,7 @@ const CityMap = () => {
           resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
           resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
         />
-      </EffectComposer>
+      </EffectComposer> */}
 
       <ambientLight intensity={10} />
 
