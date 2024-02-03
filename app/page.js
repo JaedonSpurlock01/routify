@@ -1,19 +1,19 @@
 "use client";
 
 import * as THREE from "three";
-import CityMap from "./(components)/city-map";
+import CityMap from "./(components)/Map";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useState } from "react";
-import { CitySearch } from "./(components)/city-search";
-import { NavBar } from "./(components)/nav-bar";
+import { CitySearch } from "./(components)/Search";
+import { NavBar } from "./(components)/Navbar";
 
 import Image from "next/image";
 
 import backgroundImg from "@/public/background.jpg";
 import { AlgorithmContextProvider } from "@/lib/context/algorithm.context";
 import { ThreeContextProvider } from "@/lib/context/three.context";
-import { AlgorithmController } from "./(components)/algorithm-controller";
+import { AlgorithmController } from "./(components)/AlgorithmController";
 
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);

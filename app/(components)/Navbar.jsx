@@ -1,8 +1,8 @@
 import React from "react";
 import { IoMdSettings, IoIosInformation } from "react-icons/io";
-import { Dropdown } from "./dropdown";
-import { StartButton } from "./start-button";
-import { ClearPathButton } from "./clear-path";
+import { Dropdown } from "./Dropdown";
+import { StartButton } from "./StartButton";
+import { ClearPathButton } from "./ClearButton";
 
 export const NavBar = () => {
   return (

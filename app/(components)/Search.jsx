@@ -5,6 +5,7 @@ import { RotatingLines } from "react-loader-spinner";
 
 import jsonData from "@/lib/test-cities/san-diego.json";
 import { ThreeContext } from "@/lib/context/three.context";
+import request from "@/lib/request";
 
 export const CitySearch = ({ setMapIsReady }) => {
   const [enteredInput, setEnteredInput] = useState("");
@@ -53,62 +54,14 @@ export const CitySearch = ({ setMapIsReady }) => {
   };
 
   const pickSuggestion = (suggestion) => {
-    // By convention the area id can be calculated from an existing
-    // OSM way by adding 2400000000 to its OSM id, or in case of a
-    // relation by adding 3600000000 respectively.
-
-    // Remove later, used for testing //
-    let parsedLineData = parseLineData(jsonData);
-    setParsedLineData(parsedLineData);
-    setMapIsReady(true);
-    return;
-    ////////////////////////////////////
-
-    let areaId;
-
-    if (suggestion.osm_type === "relation") {
-      areaId = suggestion.osm_id + 36e8;
-    } else if (suggestion.osm_type === "way") {
-      areaId = suggestion.osm_id + 24e8;
-    }
-
-    // Different types of filtering out lines
-    // prettier-ignore
-    const roadStrict = '[highway~"^(((motorway|trunk|primary|secondary|tertiary)(_link)?)|unclassified|residential|living_street|pedestrian|service|track)$"][area!=yes]';
-
-    // prettier-ignore
-    const roadBasic = '[highway~"^(motorway|primary|secondary|tertiary)|residential"]';
-    const road = "[highway]";
-    const building = "[building]";
-    const allWays = "";
-
-    const wayFilter = roadStrict;
-    const timeout = 900;
-    const maxHeapSize = 1073741824;
-    const responseType = "geom";
-
-    // OverpassQL query to filter and extract roads from Overpass API
-    const queryString = `[timeout:${timeout}][maxsize:${maxHeapSize}][out:json];area(3600253832);(._; )->.area;(way${wayFilter}(area.area););out ${responseType};`;
-
-    /*
-    / KARTI, HERE IS WHERE YOU WILL SEND THE OVERPASS API REQUEST, THE SKELETON OF THE REQUEST IS IN THE GOOGLE DOC, USE THE QUERY STRING ABOVE
-    /
-    / BEFORE SENDING THE REQUEST, PLEASE CHECK THE DATABASE FIRST TO SEE IF THE AREA_ID ALREADY EXISTS IN THERE
-    /
-    / IF IT IS NOT IN THE DATABASE, SEND THE API REQUEST, THEN CALL ParseLineData(API_RESPONSE.json), THEN ADD THE RETURN ARRAY FROM THAT FUNCTION INTO THE DATABASE
-    / USING THE APPROPIATE SCHEMA BELOW,
-    /
-    / NAME: suggestion.name
-    / DISPLAY_NAME: suggestion.display_name
-    / AREAID: areaId
-    / BOUNDING_BOX: suggestion.boundingbox
-    / OSMTYPE: suggestion.osm_type 
-    / OSMID: suggestion.osm_id
-    / LINES: parsed_line_data   <- put the returned value from ParseLineData(json) here, you do not need to modify ParseLineData
-    */
-
-    setParsedLineData([] /* Set the parsed_line_data here */);
-    setMapIsReady(true);
+    request(suggestion)
+      .then((response) => {
+        setParsedLineData(parseLineData(response));
+        setMapIsReady(true);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
