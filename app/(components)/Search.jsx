@@ -1,7 +1,7 @@
 import parseLineData from "@/lib/parsing";
 import React, { useState, useContext } from "react";
 import { IoIosSearch } from "react-icons/io";
-import { RotatingLines } from "react-loader-spinner";
+import { RotatingLines, ProgressBar } from "react-loader-spinner";
 
 import jsonData from "@/lib/test-cities/san-diego.json";
 import { ThreeContext } from "@/lib/context/three.context";
@@ -12,6 +12,8 @@ export const CitySearch = ({ setMapIsReady }) => {
   const [loading, setLoading] = useState(false);
   const [suggestionsLoaded, setSuggestionsLoaded] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
+  const [selectedSuggestion, setSelectedSuggestion] = useState("");
+  const [sendingRequest, setSendingRequest] = useState(false);
   const { setParsedLineData } = useContext(ThreeContext);
 
   const onSubmit = async (e) => {
@@ -54,6 +56,8 @@ export const CitySearch = ({ setMapIsReady }) => {
   };
 
   const pickSuggestion = (suggestion) => {
+    setSendingRequest(true);
+    setSelectedSuggestion(suggestion.display_name);
     request(suggestion)
       .then((response) => {
         setParsedLineData(parseLineData(response));
@@ -61,6 +65,11 @@ export const CitySearch = ({ setMapIsReady }) => {
       })
       .catch((error) => {
         console.log(error);
+      })
+      .finally(() => {
+        setSuggestions([]);
+        setSuggestionsLoaded(false);
+        setSendingRequest(false);
       });
   };
 
@@ -72,40 +81,50 @@ export const CitySearch = ({ setMapIsReady }) => {
       <h2 className="mb-5 sm:mb-10 text-neutral-500 text-center pl-2 pr-2 text-xs sm:text-lg">
         Your ultimate source for pathfinding algorithms in any city.
       </h2>
-      <form onSubmit={onSubmit} className="relative">
-        <input
-          placeholder="Enter a city"
-          value={enteredInput}
-          onChange={(e) => setEnteredInput(e.target.value)}
-          type="text"
-          className="rounded-lg p-3 pl-5 pr-10 text-neutral-800 text-xs sm:text-sm focus:outline-none mb-4"
-        />
-        {!loading && (
-          <a
-            href="#"
-            onClick={onSubmit}
-            type="submit"
-            className="absolute right-5 top-1/2 transform -translate-y-4 bg-white"
-          >
-            <IoIosSearch />
-          </a>
-        )}
+      {sendingRequest && (
+        <div className="flex flex-col items-center justify-center">
+          <ProgressBar width={50} borderColor="white" barColor="#e8c497" />
+          <p className="text-neutral-200">
+            Currently loading {selectedSuggestion}
+          </p>
+        </div>
+      )}
+      {!sendingRequest && (
+        <form onSubmit={onSubmit} className="relative">
+          <input
+            placeholder="Enter a city"
+            value={enteredInput}
+            onChange={(e) => setEnteredInput(e.target.value)}
+            type="text"
+            className="rounded-lg p-3 pl-5 pr-10 text-neutral-800 text-xs sm:text-sm focus:outline-none mb-4"
+          />
+          {!loading && (
+            <a
+              href="#"
+              onClick={onSubmit}
+              type="submit"
+              className="absolute right-5 top-1/2 transform -translate-y-4 bg-white"
+            >
+              <IoIosSearch />
+            </a>
+          )}
 
-        {loading && (
-          <div className="absolute right-5 top-1/2 transform -translate-y-4 bg-white">
-            <RotatingLines
-              visible={true}
-              height="18"
-              width="18"
-              strokeColor="grey"
-              strokeWidth="5"
-              animationDuration="0.75"
-            />
-          </div>
-        )}
-      </form>
+          {loading && (
+            <div className="absolute right-5 top-1/2 transform -translate-y-4 bg-white">
+              <RotatingLines
+                visible={true}
+                height="18"
+                width="18"
+                strokeColor="grey"
+                strokeWidth="5"
+                animationDuration="0.75"
+              />
+            </div>
+          )}
+        </form>
+      )}
 
-      {!loading && (
+      {!loading && !sendingRequest && (
         <div>
           {suggestionsLoaded && suggestions.length > 0 && (
             <div>
