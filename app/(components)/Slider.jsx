@@ -8,7 +8,7 @@ export const SpeedSlider = () => {
 
   return (
     <div className="p-2 w-[10rem] h-9">
-      <h2 className="text-xs text-neutral-100 ">Animation Speed</h2>
+      <h2 className="text-xs text-neutral-100 select-none">Animation Speed</h2>
       <Slider
         defaultValue={10}
         min={10}

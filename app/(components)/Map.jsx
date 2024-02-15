@@ -151,7 +151,7 @@ const CityMap = () => {
       <EffectComposer>
         <Bloom
           selection={glowingLineMeshRef}
-          intensity={1.5} // The bloom intensity.
+          intensity={0.5} // The bloom intensity.
           kernelSize={KernelSize.LARGE} // blur kernel size
           luminanceThreshold={0.25} // luminance threshold. Raise this value to mask out darker elements in the scene.
           luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
