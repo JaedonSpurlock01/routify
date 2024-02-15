@@ -1,6 +1,6 @@
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
-import { useEffect, useContext, useMemo, useRef, useState } from "react";
+import { useEffect, useContext, useMemo, useState } from "react";
 import PathfindingInstance from "@/lib/models/PathfindingInstance";
 import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
@@ -57,7 +57,9 @@ export const AlgorithmController = () => {
     }
 
     const processSteps = () => {
-      for (let i = 0; i < 200; i++) {
+      let updatedLineIndices = [];
+
+      for (let i = 0; i < 100; i++) {
         if (pathfindingInstance.finished) return;
 
         // Process the next step
@@ -78,13 +80,14 @@ export const AlgorithmController = () => {
             topLayerSceneRef.current.lineWidth
           );
 
-          setUpdatedLineIndices((prevIndices) => [
-            ...prevIndices,
-            currentEdgeIndex,
-          ]);
+          updatedLineIndices.push(currentEdgeIndex);
         }
       }
 
+      setUpdatedLineIndices((prevIndices) => [
+        ...prevIndices,
+        ...updatedLineIndices,
+      ]);
       setTimeout(processSteps, 1);
     };
 
