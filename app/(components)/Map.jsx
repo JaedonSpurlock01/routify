@@ -82,6 +82,16 @@ const CityMap = () => {
   };
   useEventListener("dblclick", handleClick);
 
+  useEventListener("keypress", (e) => {
+    if (e.key === "c") {
+      topLayerSceneRef.current.updateScene(
+        glowingLineMeshRef,
+        cityGraph.edgeToIndex,
+        false
+      );
+    }
+  });
+
   useLayoutEffect(() => {
     // Set up threeJS map layers (base -> gray, top -> pathfinding layer)
     if (!baseLayerSceneRef.current) {
