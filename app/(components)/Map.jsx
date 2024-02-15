@@ -34,10 +34,6 @@ const CityMap = () => {
     setStartNode,
     setEndNode,
     cityGraph,
-    setIsAlgorithmReady,
-    setIsStarting,
-    setIsPaused,
-    setIsStopped,
   } = useContext(AlgorithmContext);
   const {
     glowingLineMeshRef,
@@ -141,26 +137,8 @@ const CityMap = () => {
       setStartNode(null);
       setEndNode(null);
       setClearAll(false);
-
-      topLayerSceneRef.current.updateScene(
-        glowingLineMeshRef,
-        cityGraph.edgeToIndex,
-        false
-      );
     }
-  }, [
-    clearAll,
-    setClearAll,
-    setStartNode,
-    setEndNode,
-    setIsAlgorithmReady,
-    setIsStarting,
-    setIsPaused,
-    topLayerSceneRef,
-    cityGraph,
-    glowingLineMeshRef,
-    setIsStopped,
-  ]);
+  }, [clearAll, setClearAll, setStartNode, setEndNode]);
 
   return (
     <>

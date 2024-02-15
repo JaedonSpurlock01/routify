@@ -4,11 +4,14 @@ import { useEffect, useContext, useMemo, useRef, useState } from "react";
 import PathfindingInstance from "@/lib/models/PathfindingInstance";
 import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
+import * as THREE from "three";
+
 export const AlgorithmController = () => {
   const { cityGraph, isAlgorithmReady, startNode, endNode, isStopped } =
     useContext(AlgorithmContext);
   const { glowingLineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
   const [started, setStarted] = useState(false);
+  const [updatedLineIndices, setUpdatedLineIndices] = useState([]);
 
   const pathfindingInstance = useMemo(() => {
     let instance = new PathfindingInstance();
@@ -17,6 +20,27 @@ export const AlgorithmController = () => {
     instance.setGraph(cityGraph);
     return instance;
   }, [startNode, endNode, cityGraph]);
+
+  useEffect(() => {
+    if (!isStopped) return;
+    updatedLineIndices.forEach((lineIndex) => {
+      const line = topLayerSceneRef.current.segmentProps[lineIndex];
+
+      const tempColor = new THREE.Color();
+
+      addLineToMesh(
+        glowingLineMeshRef.current,
+        topLayerSceneRef.current.tempObject,
+        tempColor,
+        line.coords,
+        line.computedData,
+        lineIndex,
+        false,
+        0.00001,
+        topLayerSceneRef.current.lineWidth
+      );
+    });
+  }, [updatedLineIndices, isStopped, glowingLineMeshRef, topLayerSceneRef]);
 
   useEffect(() => {
     if (isStopped) {
@@ -53,6 +77,11 @@ export const AlgorithmController = () => {
             0.00001,
             topLayerSceneRef.current.lineWidth
           );
+
+          setUpdatedLineIndices((prevIndices) => [
+            ...prevIndices,
+            currentEdgeIndex,
+          ]);
         }
       }
 
@@ -67,6 +96,8 @@ export const AlgorithmController = () => {
     topLayerSceneRef,
     isStopped,
     started,
+    setUpdatedLineIndices,
+    updatedLineIndices,
   ]);
 
   return null;
