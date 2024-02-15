@@ -33,7 +33,7 @@ export const AlgorithmController = () => {
     }
 
     const processSteps = () => {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 200; i++) {
         if (pathfindingInstance.finished) return;
 
         // Process the next step
