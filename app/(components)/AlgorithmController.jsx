@@ -1,4 +1,4 @@
-import { breadthFirstSearch } from "@/lib/algorithms/breadth-first-search";
+import { breadthFirstSearch } from "@/lib/models/algorithms/breadth-first-search";
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
 import { useEffect, useContext } from "react";

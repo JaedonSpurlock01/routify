@@ -1,11 +1,11 @@
-import parseLineData from "@/lib/parsing";
+import parseLineData from "@/lib/services/parsing";
 import React, { useState, useContext } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { RotatingLines, ProgressBar } from "react-loader-spinner";
 
 import jsonData from "@/lib/test-cities/san-diego.json";
 import { ThreeContext } from "@/lib/context/three.context";
-import request from "@/lib/request";
+import request from "@/lib/services/request";
 
 export const CitySearch = ({ setMapIsReady }) => {
   const [enteredInput, setEnteredInput] = useState("");

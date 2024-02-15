@@ -1,5 +1,5 @@
 import React, { createContext, useMemo, useState } from "react";
-import { Graph } from "../graph";
+import { Graph } from "../models/graph";
 
 export const AlgorithmContext = createContext();
 
