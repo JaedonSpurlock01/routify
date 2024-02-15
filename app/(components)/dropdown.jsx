@@ -2,17 +2,11 @@ import React, { useState } from "react";
 
 import { AiOutlineCaretDown, AiOutlineCaretUp } from "react-icons/ai";
 
-const listAlgorithms = [
-  "Breadth-First Search",
-  "Depth-First Search",
-  "Dijkstra's",
-  "A* Search",
-  "Bidirectional Search",
-];
+const listAlgorithms = ["Breadth-First Search", "A* Search"];
 
 export const Dropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("Breadth-First Search");
+  const [selectedOption, setSelectedOption] = useState("A* Search");
 
   return (
     <div>
