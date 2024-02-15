@@ -20,7 +20,7 @@ export const Dropdown = () => {
         onClick={() => {
           isOpen ? setIsOpen(false) : setIsOpen(true);
         }}
-        className="relative bg-neutral-800 p-2 w-[10rem] h-9 hover:shadow-lg
+        className="relative bg-neutral-800 p-2 w-[10rem] h-9 hover:shadow-lg mt-2
       hover:shadow-neutral-800 transition-all rounded-md font-medium select-none flex flex-col items-center"
       >
         <span className="text-[8px] text-neutral-400 absolute top-[3px] left-[0.5rem]">
