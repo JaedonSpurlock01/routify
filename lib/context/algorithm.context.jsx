@@ -3,12 +3,6 @@ import { Graph } from "../models/Graph";
 
 export const AlgorithmContext = createContext();
 
-export let algorithmStopped = false;
-
-export const stopAlgorithm = (bool) => {
-  algorithmStopped = bool;
-}
-
 export const AlgorithmContextProvider = ({ children }) => {
   const [currentAlgorithm, setCurrentAlgorithm] = useState("");
   const [isAlgorithmReady, setIsAlgorithmReady] = useState(false);
@@ -38,7 +32,7 @@ export const AlgorithmContextProvider = ({ children }) => {
     clearAll,
     setClearAll,
     setIsStopped,
-    isStopped
+    isStopped,
   };
 
   return (

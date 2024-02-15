@@ -142,11 +142,6 @@ const CityMap = () => {
       setEndNode(null);
       setClearAll(false);
 
-      setIsAlgorithmReady(false);
-      setIsStarting(false);
-      setIsPaused(false);
-      setIsStopped(true);
-
       topLayerSceneRef.current.updateScene(
         glowingLineMeshRef,
         cityGraph.edgeToIndex,

@@ -2,56 +2,45 @@ import {
   AlgorithmContext,
   stopAlgorithm,
 } from "@/lib/context/algorithm.context";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 
-import { IoMdPlay, IoIosPause } from "react-icons/io";
+import { IoMdPlay } from "react-icons/io";
+import { IoStop } from "react-icons/io5";
 
 export const StartButton = () => {
   const {
     startNode,
     endNode,
-    setIsPaused,
-    isPaused,
+    setClearAll,
     isStopped,
     setIsStopped,
-    isStarting,
-    setIsStarting,
-    isAlgorithmReady,
     setIsAlgorithmReady,
   } = useContext(AlgorithmContext);
 
+  const [isClickProcessing, setIsClickProcessing] = useState(false);
+
   const handleButtonToggle = () => {
-    // Guard clause for missing start or end points
+    if (isClickProcessing) return;
+
+    setIsClickProcessing(true);
+
     if (!startNode || !endNode) {
       console.log("Please put a start and end point to start the algorithm");
-      return;
-    }
-
-    // Algorithm is ready to start
-    if (!isStarting && !isPaused && !isAlgorithmReady && isStopped) {
+    } else if (!isStopped) {
+      setClearAll(true);
+      setIsAlgorithmReady(false);
+      setIsStopped(true);
+    } else {
       setIsAlgorithmReady(true);
-      setIsPaused(false);
-      setIsStarting(true);
       setIsStopped(false);
-      stopAlgorithm(false);
-      return;
     }
 
-    // Toggle between paused and starting
-    if (isStarting !== isPaused) {
-      setIsPaused(!isPaused);
-      setIsStarting(!isStarting);
-      stopAlgorithm(true);
-      return;
-    }
-
-    // If none of the above conditions are met, log an error
-    console.log("Something went wrong here...?");
+    setIsClickProcessing(false);
   };
 
   return (
     <>
-      {!isStarting ? (
+      {isStopped ? (
         <button
           onClick={handleButtonToggle}
           className="rounded-full bg-[#46b780] p-4 text-2xl text-neutral-100 w-14 h-14 hover:shadow-lg hover:shadow-neutral-800 transition-all"
@@ -61,9 +50,9 @@ export const StartButton = () => {
       ) : (
         <button
           onClick={handleButtonToggle}
-          className="rounded-full bg-[#525252] p-4 text-2xl text-neutral-100 w-14 h-14 hover:shadow-lg hover:shadow-neutral-800 transition-all"
+          className="rounded-full bg-[#ff4252] p-4 text-2xl text-neutral-100 w-14 h-14 hover:shadow-lg hover:shadow-neutral-800 transition-all"
         >
-          <IoIosPause />
+          <IoStop className="text-white" />
         </button>
       )}
     </>
