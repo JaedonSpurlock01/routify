@@ -10,7 +10,6 @@ export const AlgorithmContextProvider = ({ children }) => {
   const [startNode, setStartNode] = useState(null);
   const [endNode, setEndNode] = useState(null);
   const [clearAll, setClearAll] = useState(false);
-  const [speed, setSpeed] = useState(200);
 
   const cityGraph = useMemo(() => new Graph(), []);
 
@@ -28,8 +27,6 @@ export const AlgorithmContextProvider = ({ children }) => {
     setClearAll,
     setIsStopped,
     isStopped,
-    speed,
-    setSpeed
   };
 
   return (

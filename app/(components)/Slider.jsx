@@ -4,18 +4,19 @@ import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { alpha } from "@mui/material/styles";
 
 export const SpeedSlider = () => {
-  const { setSpeed } = useContext(AlgorithmContext);
+  const { cityGraph } = useContext(AlgorithmContext);
 
   return (
     <div className="p-2 w-[10rem] h-9">
       <h2 className="text-xs text-neutral-100 ">Animation Speed</h2>
       <Slider
-        defaultValue={100}
+        defaultValue={10}
         min={10}
-        max={1000}
-        step={10}
+        max={100}
+        step={1}
         valueLabelDisplay="off"
         aria-label="Algorithm Speed"
+        onChange={(e) => cityGraph.setAlgorithmSpeed(e.target.value)}
         sx={{
           color: "#ffffff",
           "& .MuiSlider-thumb": {

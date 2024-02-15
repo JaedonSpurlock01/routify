@@ -59,7 +59,7 @@ export const AlgorithmController = () => {
     const processSteps = () => {
       let updatedLineIndices = [];
 
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < cityGraph.algorithmSpeed; i++) {
         if (pathfindingInstance.finished) return;
 
         // Process the next step
@@ -101,6 +101,7 @@ export const AlgorithmController = () => {
     started,
     setUpdatedLineIndices,
     updatedLineIndices,
+    cityGraph.algorithmSpeed,
   ]);
 
   return null;
