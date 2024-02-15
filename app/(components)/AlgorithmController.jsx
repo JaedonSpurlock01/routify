@@ -92,6 +92,56 @@ export const AlgorithmController = () => {
     };
 
     processSteps(); // Initial call to start processing steps
+    if (
+      pathfindingInstance.getPredecessors &&
+      pathfindingInstance.finished &&
+      !isStopped
+    ) {
+      let currentNodeCoords = endNode.createCompositeKey();
+      const tempColor = new THREE.Color();
+      tempColor.setHex(0xff5454).clone();
+
+      const predecessors = pathfindingInstance.getPredecessors();
+
+      const delay = async (ms) => {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      };
+
+      const processNode = async () => {
+        while (predecessors.get(currentNodeCoords) && !isStopped) {
+          let cameFromCoords = predecessors.get(currentNodeCoords);
+
+          const coordinates1 = `[${cameFromCoords}],[${currentNodeCoords}]`;
+          const coordinates2 = `[${currentNodeCoords}],[${cameFromCoords}]`;
+
+          const currentEdgeIndex =
+            cityGraph.edgeToIndex.get(coordinates1) ??
+            cityGraph.edgeToIndex.get(coordinates2);
+          const currentEdge =
+            topLayerSceneRef.current.segmentProps[currentEdgeIndex];
+
+          if (currentEdge && !isStopped) {
+            addLineToMesh(
+              glowingLineMeshRef.current,
+              topLayerSceneRef.current.tempObject,
+              tempColor,
+              currentEdge.coords,
+              currentEdge.computedData,
+              currentEdgeIndex,
+              true,
+              0.00003,
+              0.0007
+            );
+          }
+
+          currentNodeCoords = cameFromCoords;
+
+          await delay(3);
+        }
+      };
+
+      processNode();
+    }
   }, [
     isAlgorithmReady,
     pathfindingInstance,
@@ -102,6 +152,8 @@ export const AlgorithmController = () => {
     setUpdatedLineIndices,
     updatedLineIndices,
     cityGraph.algorithmSpeed,
+    endNode,
+    cityGraph,
   ]);
 
   return null;

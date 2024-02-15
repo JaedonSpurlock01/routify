@@ -30,11 +30,7 @@ let viewport = new THREE.Vector2();
 
 const CityMap = () => {
   const [dots, setDots] = useState([]);
-  const {
-    setStartNode,
-    setEndNode,
-    cityGraph,
-  } = useContext(AlgorithmContext);
+  const { setStartNode, setEndNode, cityGraph } = useContext(AlgorithmContext);
   const {
     glowingLineMeshRef,
     lineMeshRef,
@@ -100,7 +96,7 @@ const CityMap = () => {
 
     if (!topLayerSceneRef.current) {
       topLayerSceneRef.current = new SceneObject(
-        0xe8c497,
+        0xd1fff1,
         0.0002,
         0.00001,
         parsedLineData.length,
