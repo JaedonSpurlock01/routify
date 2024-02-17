@@ -1,6 +1,6 @@
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
-import { useEffect, useContext, useMemo, useState } from "react";
+import { useEffect, useContext, useMemo, useState, useRef } from "react";
 import PathfindingInstance from "@/lib/models/PathfindingInstance";
 import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
@@ -13,6 +13,13 @@ export const AlgorithmController = () => {
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
   const [updatedLineIndices, setUpdatedLineIndices] = useState([]);
+
+  // Inside your component
+  const isStoppedRef = useRef(false);
+
+  useEffect(() => {
+    isStoppedRef.current = isStopped; // React is so dumb -_-
+  }, [isStopped]);
 
   const pathfindingInstance = useMemo(() => {
     let instance = new PathfindingInstance();
@@ -56,7 +63,7 @@ export const AlgorithmController = () => {
       };
 
       const processNode = async () => {
-        while (predecessors.get(currentNodeCoords) && !isStopped) {
+        while (predecessors.get(currentNodeCoords) && !isStoppedRef.current) {
           let cameFromCoords = predecessors.get(currentNodeCoords);
 
           const coordinates1 = `[${cameFromCoords}],[${currentNodeCoords}]`;
@@ -68,7 +75,7 @@ export const AlgorithmController = () => {
           const currentEdge =
             topLayerSceneRef.current.segmentProps[currentEdgeIndex];
 
-          if (currentEdge && !isStopped) {
+          if (currentEdge) {
             addLineToMesh(
               glowingLineMeshRef.current,
               topLayerSceneRef.current.tempObject,

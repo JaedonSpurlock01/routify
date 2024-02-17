@@ -10,9 +10,9 @@ export const SpeedSlider = () => {
     <div className="p-2 w-[10rem] h-9">
       <h2 className="text-xs text-neutral-100 select-none">Animation Speed</h2>
       <Slider
-        defaultValue={10}
-        min={10}
-        max={300}
+        defaultValue={30}
+        min={1}
+        max={200}
         step={1}
         valueLabelDisplay="off"
         aria-label="Algorithm Speed"
