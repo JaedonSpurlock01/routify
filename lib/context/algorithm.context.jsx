@@ -23,8 +23,6 @@ export const AlgorithmContextProvider = ({ children }) => {
     endNode,
     setEndNode,
     cityGraph,
-    clearAll,
-    setClearAll,
     setIsStopped,
     isStopped,
   };

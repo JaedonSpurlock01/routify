@@ -11,7 +11,6 @@ export const StartButton = () => {
   const {
     startNode,
     endNode,
-    setClearAll,
     isStopped,
     setIsStopped,
     setIsAlgorithmReady,
@@ -27,12 +26,11 @@ export const StartButton = () => {
     if (!startNode || !endNode) {
       console.log("Please put a start and end point to start the algorithm");
     } else if (!isStopped) {
-      setClearAll(true);
-      setIsAlgorithmReady(false);
       setIsStopped(true);
+      setIsAlgorithmReady(false);
     } else {
-      setIsAlgorithmReady(true);
       setIsStopped(false);
+      setIsAlgorithmReady(true);
     }
 
     setIsClickProcessing(false);

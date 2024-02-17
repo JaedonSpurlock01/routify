@@ -6,13 +6,14 @@ import {
   useState,
   useContext,
   useEffect,
+  useRef,
 } from "react";
 
 // threeJS
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { KernelSize, Resolution } from "postprocessing";
-import { useThree } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 
 // Library functions to handle map data
 import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
@@ -21,7 +22,6 @@ import {
   calculateMapCenter,
   worldPointFromScreenPoint,
 } from "@/lib/utilities/mapUtils";
-import { Dot } from "./Dot";
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { useEventListener } from "ahooks";
 import { ThreeContext } from "@/lib/context/three.context";
@@ -29,7 +29,7 @@ import { ThreeContext } from "@/lib/context/three.context";
 let viewport = new THREE.Vector2();
 
 const CityMap = () => {
-  const [dots, setDots] = useState([]);
+  const [dotCount, setDotCount] = useState(0);
   const { setStartNode, setEndNode, cityGraph } = useContext(AlgorithmContext);
   const {
     glowingLineMeshRef,
@@ -38,8 +38,11 @@ const CityMap = () => {
     topLayerSceneRef,
     parsedLineData,
   } = useContext(ThreeContext);
-  const { clearAll, setClearAll } = useContext(AlgorithmContext);
+  const { isStopped } = useContext(AlgorithmContext);
   const { camera } = useThree();
+
+  const startDotRef = useRef();
+  const endDotRef = useRef();
 
   // Calculate center of map
   const center = useMemo(
@@ -56,17 +59,16 @@ const CityMap = () => {
       0
     );
 
-    if (!dots.length) {
-      // Start node
+    console.log(startDotRef, endDotRef);
+
+    if (!dotCount) {
       setStartNode(closestNode);
-      setDots([{ x: closestNode.x, y: closestNode.y, color: 0x42f587 }]);
-    } else if (dots.length === 1) {
-      // End Node
+      startDotRef.current.set(closestNode.x, closestNode.y, 0);
+      setDotCount(1);
+    } else if (dotCount === 1) {
       setEndNode(closestNode);
-      setDots((dots) => [
-        ...dots,
-        { x: closestNode.x, y: closestNode.y, color: 0xfc2d49 },
-      ]);
+      endDotRef.current.set(closestNode.x, closestNode.y, 0);
+      setDotCount(2);
     }
   };
 
@@ -89,6 +91,11 @@ const CityMap = () => {
         cityGraph.edgeToIndex,
         false
       );
+      setDotCount(0);
+      startDotRef.current.set(10, 10, 0);
+      endDotRef.current.set(10, 10, 0);
+      setStartNode(null);
+      setEndNode(null);
     }
   });
 
@@ -138,13 +145,14 @@ const CityMap = () => {
   ]);
 
   useEffect(() => {
-    if (clearAll) {
-      setDots([]);
+    if (isStopped) {
+      setDotCount(0);
+      startDotRef.current.set(10, 10, 0);
+      endDotRef.current.set(10, 10, 0);
       setStartNode(null);
       setEndNode(null);
-      setClearAll(false);
     }
-  }, [clearAll, setClearAll, setStartNode, setEndNode]);
+  }, [isStopped, setStartNode, setEndNode]);
 
   return (
     <>
@@ -187,9 +195,21 @@ const CityMap = () => {
         />
       </instancedMesh>
 
-      {dots.map((dot, index) => (
-        <Dot key={index} position={[dot.x, dot.y, 0]} color={dot.color} />
-      ))}
+      <mesh
+        ref={startDotRef}
+        position={[startDotRef.current.x, startDotRef.current.y, 0]}
+      >
+        <sphereGeometry args={[0.0004, 32, 32]} />
+        <meshStandardMaterial color={0x42f587} />
+      </mesh>
+
+      <mesh
+        ref={endDotRef}
+        position={[endDotRef.current.x, endDotRef.current.y, 0]}
+      >
+        <sphereGeometry args={[0.0004, 32, 32]} />
+        <meshStandardMaterial color={0xfc2d49} />
+      </mesh>
     </>
   );
 };
