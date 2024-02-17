@@ -6,6 +6,8 @@ import jsonData from "@/lib/testing/test-cities/san-diego.json";
 
 import { ThreeContext } from "@/lib/context/three.context";
 import request from "@/lib/services/request";
+import encodeMap from "@/lib/caching/encode";
+import decodeMap from "@/lib/caching/decode";
 
 export const CitySearch = ({ setMapIsReady }) => {
   const [enteredInput, setEnteredInput] = useState("");
@@ -59,8 +61,18 @@ export const CitySearch = ({ setMapIsReady }) => {
     setSendingRequest(true);
     setSelectedSuggestion(suggestion.display_name);
 
-    setParsedLineData(parseLineData(jsonData));
+    const parsedLineData = parseLineData(jsonData);
+
+    setParsedLineData(parsedLineData);
     setMapIsReady(true);
+
+    encodeMap(
+      suggestion.name,
+      new Date().toDateString(),
+      suggestion.osm_id,
+      parsedLineData
+    ).then((byteData) => decodeMap(byteData));
+
     return;
 
     request(suggestion)
