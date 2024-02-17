@@ -1,20 +1,12 @@
-import {
-  AlgorithmContext,
-  stopAlgorithm,
-} from "@/lib/context/algorithm.context";
+import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import React, { useContext, useState } from "react";
 
 import { IoMdPlay } from "react-icons/io";
 import { IoStop } from "react-icons/io5";
 
 export const StartButton = () => {
-  const {
-    startNode,
-    endNode,
-    isStopped,
-    setIsStopped,
-    setIsAlgorithmReady,
-  } = useContext(AlgorithmContext);
+  const { startNode, endNode, isStopped, setIsStopped, setIsAlgorithmReady } =
+    useContext(AlgorithmContext);
 
   const [isClickProcessing, setIsClickProcessing] = useState(false);
 

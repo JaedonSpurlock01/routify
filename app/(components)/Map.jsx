@@ -13,7 +13,7 @@ import {
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { KernelSize, Resolution } from "postprocessing";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useThree } from "@react-three/fiber";
 
 // Library functions to handle map data
 import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
@@ -109,7 +109,7 @@ const CityMap = () => {
     if (!baseLayerSceneRef.current) {
       baseLayerSceneRef.current = new SceneObject(
         0x83888c,
-        0.0001,
+        0.00005,
         0,
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, 0x83888c)
@@ -119,7 +119,7 @@ const CityMap = () => {
     if (!topLayerSceneRef.current) {
       topLayerSceneRef.current = new SceneObject(
         0xd1fff1,
-        0.0002,
+        0.0001,
         0.00001,
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, 0xe8c497)

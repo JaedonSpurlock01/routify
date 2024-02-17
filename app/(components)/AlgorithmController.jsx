@@ -51,7 +51,7 @@ export const AlgorithmController = () => {
   }, [updatedLineIndices, isStopped, glowingLineMeshRef, topLayerSceneRef]);
 
   useEffect(() => {
-    if (finished) {
+    if (finished && !isStopped) {
       let currentNodeCoords = endNode.createCompositeKey();
       const tempColor = new THREE.Color();
       tempColor.setHex(0xff5454).clone();
@@ -85,7 +85,7 @@ export const AlgorithmController = () => {
               currentEdgeIndex,
               true,
               0.00003,
-              0.0007
+              0.0003
             );
           }
 
