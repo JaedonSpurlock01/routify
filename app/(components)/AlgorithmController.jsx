@@ -11,6 +11,7 @@ export const AlgorithmController = () => {
     useContext(AlgorithmContext);
   const { glowingLineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
   const [started, setStarted] = useState(false);
+  const [finished, setFinished] = useState(false);
   const [updatedLineIndices, setUpdatedLineIndices] = useState([]);
 
   const pathfindingInstance = useMemo(() => {
@@ -43,60 +44,7 @@ export const AlgorithmController = () => {
   }, [updatedLineIndices, isStopped, glowingLineMeshRef, topLayerSceneRef]);
 
   useEffect(() => {
-    if (isStopped) {
-      setStarted(false);
-      pathfindingInstance.reset();
-      return;
-    }
-
-    if (!isAlgorithmReady) return;
-
-    if (isAlgorithmReady && !started) {
-      pathfindingInstance.start();
-      setStarted(true);
-    }
-
-    const processSteps = () => {
-      let updatedLineIndices = [];
-
-      for (let i = 0; i < cityGraph.algorithmSpeed; i++) {
-        if (pathfindingInstance.finished) return;
-
-        // Process the next step
-        const currentEdgeIndex = pathfindingInstance.nextStep();
-        const currentEdge =
-          topLayerSceneRef.current.segmentProps[currentEdgeIndex];
-
-        if (currentEdge) {
-          addLineToMesh(
-            glowingLineMeshRef.current,
-            topLayerSceneRef.current.tempObject,
-            topLayerSceneRef.current.objectColor,
-            currentEdge.coords,
-            currentEdge.computedData,
-            currentEdgeIndex,
-            true,
-            0.00001,
-            topLayerSceneRef.current.lineWidth
-          );
-
-          updatedLineIndices.push(currentEdgeIndex);
-        }
-      }
-
-      setUpdatedLineIndices((prevIndices) => [
-        ...prevIndices,
-        ...updatedLineIndices,
-      ]);
-      setTimeout(processSteps, 1);
-    };
-
-    processSteps(); // Initial call to start processing steps
-    if (
-      pathfindingInstance.getPredecessors &&
-      pathfindingInstance.finished &&
-      !isStopped
-    ) {
+    if (finished) {
       let currentNodeCoords = endNode.createCompositeKey();
       const tempColor = new THREE.Color();
       tempColor.setHex(0xff5454).clone();
@@ -141,7 +89,71 @@ export const AlgorithmController = () => {
       };
 
       processNode();
+      setFinished(false);
     }
+  }, [
+    cityGraph.edgeToIndex,
+    endNode,
+    glowingLineMeshRef,
+    isStopped,
+    pathfindingInstance,
+    topLayerSceneRef,
+    finished,
+  ]);
+
+  useEffect(() => {
+    if (isStopped) {
+      setStarted(false);
+      pathfindingInstance.reset();
+      return;
+    }
+
+    if (!isAlgorithmReady || started) return;
+
+    if (isAlgorithmReady && !started) {
+      pathfindingInstance.start();
+      setStarted(true);
+    }
+
+    const processSteps = () => {
+      let updatedLineIndices = [];
+
+      for (let i = 0; i < cityGraph.algorithmSpeed; i++) {
+        if (pathfindingInstance.finished) {
+          setFinished(true);
+          return;
+        }
+
+        // Process the next step
+        const currentEdgeIndex = pathfindingInstance.nextStep();
+        const currentEdge =
+          topLayerSceneRef.current.segmentProps[currentEdgeIndex];
+
+        if (currentEdge) {
+          addLineToMesh(
+            glowingLineMeshRef.current,
+            topLayerSceneRef.current.tempObject,
+            topLayerSceneRef.current.objectColor,
+            currentEdge.coords,
+            currentEdge.computedData,
+            currentEdgeIndex,
+            true,
+            0.00001,
+            topLayerSceneRef.current.lineWidth
+          );
+
+          updatedLineIndices.push(currentEdgeIndex);
+        }
+      }
+
+      setUpdatedLineIndices((prevIndices) => [
+        ...prevIndices,
+        ...updatedLineIndices,
+      ]);
+      setTimeout(processSteps, 1);
+    };
+
+    processSteps(); // Initial call to start processing steps
   }, [
     isAlgorithmReady,
     pathfindingInstance,
@@ -153,7 +165,6 @@ export const AlgorithmController = () => {
     updatedLineIndices,
     cityGraph.algorithmSpeed,
     endNode,
-    cityGraph,
   ]);
 
   return null;

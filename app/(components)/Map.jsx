@@ -60,8 +60,6 @@ const CityMap = () => {
       0
     );
 
-    console.log(startDotRef, endDotRef);
-
     if (!dotCount) {
       setStartNode(closestNode);
       startDotRef.current.x = closestNode.x;
@@ -106,7 +104,7 @@ const CityMap = () => {
     }
   });
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     // Set up threeJS map layers (base -> gray, top -> pathfinding layer)
     if (!baseLayerSceneRef.current) {
       baseLayerSceneRef.current = new SceneObject(
