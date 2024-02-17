@@ -58,12 +58,12 @@ export const CitySearch = ({ setMapIsReady }) => {
   };
 
   const pickSuggestion = (suggestion) => {
+    if (sendingRequest === true) return;
     setSendingRequest(true);
     setSelectedSuggestion(suggestion.display_name);
 
     const parsedLineData = parseLineData(jsonData);
 
-    setParsedLineData(parsedLineData);
     setMapIsReady(true);
 
     encodeMap(
@@ -71,7 +71,12 @@ export const CitySearch = ({ setMapIsReady }) => {
       new Date().toDateString(),
       suggestion.osm_id,
       parsedLineData
-    ).then((byteData) => decodeMap(byteData));
+    ).then((byteData) => {
+      decodeMap(byteData).then((decoded) => {
+        setParsedLineData(decoded.linesList);
+        setSendingRequest(false);
+      });
+    });
 
     return;
 
@@ -152,13 +157,9 @@ export const CitySearch = ({ setMapIsReady }) => {
                     className="mb-2 hover:bg-neutral-900 rounded-lg p-1 hover:cursor-pointer"
                     onClick={() => pickSuggestion(suggestion)}
                   >
-                    <a href="#" onClick={() => pickSuggestion(suggestion)}>
-                      <span>{suggestion.display_name}</span>
-                      <br />
-                      <small className="text-rose-500">
-                        ({suggestion.type})
-                      </small>
-                    </a>
+                    <span>{suggestion.display_name}</span>
+                    <br />
+                    <small className="text-rose-500">({suggestion.type})</small>
                   </li>
                 ))}
               </ul>
