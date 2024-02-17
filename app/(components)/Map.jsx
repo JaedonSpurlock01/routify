@@ -30,6 +30,7 @@ let viewport = new THREE.Vector2();
 
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
+  const [bloom, setBloom] = useState(true);
   const { setStartNode, setEndNode, cityGraph } = useContext(AlgorithmContext);
   const {
     glowingLineMeshRef,
@@ -63,11 +64,15 @@ const CityMap = () => {
 
     if (!dotCount) {
       setStartNode(closestNode);
-      startDotRef.current.set(closestNode.x, closestNode.y, 0);
+      startDotRef.current.x = closestNode.x;
+      startDotRef.current.y = closestNode.y;
+      startDotRef.current.z = 0;
       setDotCount(1);
     } else if (dotCount === 1) {
       setEndNode(closestNode);
-      endDotRef.current.set(closestNode.x, closestNode.y, 0);
+      endDotRef.current.x = closestNode.x;
+      endDotRef.current.y = closestNode.y;
+      endDotRef.current.z = 0;
       setDotCount(2);
     }
   };
@@ -92,10 +97,12 @@ const CityMap = () => {
         false
       );
       setDotCount(0);
-      startDotRef.current.set(10, 10, 0);
-      endDotRef.current.set(10, 10, 0);
+      startDotRef.current.x = 10;
+      endDotRef.current.x = 10;
       setStartNode(null);
       setEndNode(null);
+    } else if (e.key === "b") {
+      setBloom(!bloom);
     }
   });
 
@@ -145,10 +152,10 @@ const CityMap = () => {
   ]);
 
   useEffect(() => {
-    if (isStopped) {
+    if (isStopped && startDotRef.current && endDotRef.current) {
       setDotCount(0);
-      startDotRef.current.set(10, 10, 0);
-      endDotRef.current.set(10, 10, 0);
+      startDotRef.current.x = 10;
+      endDotRef.current.x = 10;
       setStartNode(null);
       setEndNode(null);
     }
@@ -156,18 +163,20 @@ const CityMap = () => {
 
   return (
     <>
-      <EffectComposer>
-        <Bloom
-          selection={glowingLineMeshRef}
-          intensity={0.5} // The bloom intensity.
-          kernelSize={KernelSize.LARGE} // blur kernel size
-          luminanceThreshold={0.25} // luminance threshold. Raise this value to mask out darker elements in the scene.
-          luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
-          mipmapBlur={false} // Enables or disables mipmap blur.
-          resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
-          resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
-        />
-      </EffectComposer>
+      {bloom && (
+        <EffectComposer>
+          <Bloom
+            selection={glowingLineMeshRef}
+            intensity={0.5} // The bloom intensity.
+            kernelSize={KernelSize.LARGE} // blur kernel size
+            luminanceThreshold={0.25} // luminance threshold. Raise this value to mask out darker elements in the scene.
+            luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
+            mipmapBlur={false} // Enables or disables mipmap blur.
+            resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
+            resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
+          />
+        </EffectComposer>
+      )}
 
       <ambientLight intensity={10} />
 
@@ -197,7 +206,11 @@ const CityMap = () => {
 
       <mesh
         ref={startDotRef}
-        position={[startDotRef.current.x, startDotRef.current.y, 0]}
+        position={[
+          startDotRef.current ? startDotRef.current.x : 10,
+          startDotRef.current ? startDotRef.current.y : 10,
+          0,
+        ]}
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
         <meshStandardMaterial color={0x42f587} />
@@ -205,7 +218,11 @@ const CityMap = () => {
 
       <mesh
         ref={endDotRef}
-        position={[endDotRef.current.x, endDotRef.current.y, 0]}
+        position={[
+          endDotRef.current ? endDotRef.current.x : 10,
+          endDotRef.current ? endDotRef.current.y : 10,
+          0,
+        ]}
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
         <meshStandardMaterial color={0xfc2d49} />

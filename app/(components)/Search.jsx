@@ -62,9 +62,11 @@ export const CitySearch = ({ setMapIsReady }) => {
     setSendingRequest(true);
     setSelectedSuggestion(suggestion.display_name);
 
-    const parsedLineData = parseLineData(jsonData);
-
+    setParsedLineData(parseLineData(jsonData));
     setMapIsReady(true);
+    setSendingRequest(false);
+
+    return;
 
     encodeMap(
       suggestion.name,
@@ -77,8 +79,6 @@ export const CitySearch = ({ setMapIsReady }) => {
         setSendingRequest(false);
       });
     });
-
-    return;
 
     request(suggestion)
       .then((response) => {
