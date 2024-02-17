@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message coordinate {
+    float x = 1;
+    float y = 2;
+}
+
+message line {
+    coordinate start = 1;
+    coordinate end = 2;
+}
+
+message map {
+    string name = 1;
+    string date = 2;
+    uint32 id = 3;
+    repeated line lines = 4;
+}
