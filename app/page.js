@@ -17,6 +17,7 @@ import { AlgorithmController } from "./(components)/AlgorithmController";
 
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);
+  const [city, setCity] = useState("");
 
   return (
     <ThreeContextProvider>
@@ -30,7 +31,7 @@ export default function Home() {
               className="absolute h-screen w-screen -z-10 opacity-50"
             />
             <div className="h-screen w-screen items-center flex flex-col justify-center">
-              <CitySearch setMapIsReady={setMapIsReady} />
+              <CitySearch setMapIsReady={setMapIsReady} setCity={setCity} />
             </div>
           </>
         )}
@@ -60,6 +61,16 @@ export default function Home() {
               />
             </Canvas>
             <NavBar />
+            <div className="absolute bottom-6 right-6 text-neutral-100 items-center justify-center flex-col flex">
+              <h1>{city}</h1>
+              <a
+                href="https://www.openstreetmap.org/about/"
+                target="_blank"
+                className="hover:underline"
+              >
+                <p className="text-xs font-light">data @ OpenStreetMap</p>
+              </a>
+            </div>
             <AlgorithmController />
           </div>
         )}

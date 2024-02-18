@@ -9,7 +9,7 @@ import request from "@/lib/services/request";
 import encodeMap from "@/lib/caching/encode";
 import decodeMap from "@/lib/caching/decode";
 
-export const CitySearch = ({ setMapIsReady }) => {
+export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [enteredInput, setEnteredInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [suggestionsLoaded, setSuggestionsLoaded] = useState(false);
@@ -61,6 +61,7 @@ export const CitySearch = ({ setMapIsReady }) => {
     if (sendingRequest === true) return;
     setSendingRequest(true);
     setSelectedSuggestion(suggestion.display_name);
+    setCity(suggestion.name);
 
     setParsedLineData(parseLineData(jsonData));
     setMapIsReady(true);

@@ -12,7 +12,7 @@ export const SpeedSlider = () => {
       <Slider
         defaultValue={30}
         min={1}
-        max={200}
+        max={500}
         step={1}
         valueLabelDisplay="off"
         aria-label="Algorithm Speed"

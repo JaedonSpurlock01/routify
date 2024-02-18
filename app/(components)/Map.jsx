@@ -1,13 +1,11 @@
 "use client";
 
-import {
-  useLayoutEffect,
-  useMemo,
-  useState,
-  useContext,
-  useEffect,
-  useRef,
-} from "react";
+const BLUE = 0xe1faf2;
+const RED = 0xfc2d49;
+const GREEN = 0x42f587;
+const MAP_COLOR = 0x83888c;
+
+import { useMemo, useState, useContext, useEffect, useRef } from "react";
 
 // threeJS
 import * as THREE from "three";
@@ -108,21 +106,21 @@ const CityMap = () => {
     // Set up threeJS map layers (base -> gray, top -> pathfinding layer)
     if (!baseLayerSceneRef.current) {
       baseLayerSceneRef.current = new SceneObject(
-        0x83888c,
+        MAP_COLOR,
         0.00005,
         0,
         parsedLineData.length,
-        generateSegmentProperties(parsedLineData, center, 0x83888c)
+        generateSegmentProperties(parsedLineData, center, MAP_COLOR)
       );
     }
 
     if (!topLayerSceneRef.current) {
       topLayerSceneRef.current = new SceneObject(
-        0xd1fff1,
+        BLUE,
         0.0001,
         0.00001,
         parsedLineData.length,
-        generateSegmentProperties(parsedLineData, center, 0xe8c497)
+        generateSegmentProperties(parsedLineData, center, BLUE)
       );
     }
 
@@ -210,7 +208,7 @@ const CityMap = () => {
         ]}
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
-        <meshStandardMaterial color={0x42f587} />
+        <meshStandardMaterial color={GREEN} />
       </mesh>
 
       <mesh
@@ -222,7 +220,7 @@ const CityMap = () => {
         ]}
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
-        <meshStandardMaterial color={0xfc2d49} />
+        <meshStandardMaterial color={RED} />
       </mesh>
     </>
   );

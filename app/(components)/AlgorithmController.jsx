@@ -6,6 +6,8 @@ import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
 import * as THREE from "three";
 
+let g_line_array = [];
+
 export const AlgorithmController = () => {
   const { cityGraph, isAlgorithmReady, startNode, endNode, isStopped } =
     useContext(AlgorithmContext);
@@ -31,23 +33,22 @@ export const AlgorithmController = () => {
 
   useEffect(() => {
     if (!isStopped) return;
-    updatedLineIndices.forEach((lineIndex) => {
-      const line = topLayerSceneRef.current.segmentProps[lineIndex];
-
-      const tempColor = new THREE.Color();
+    updatedLineIndices.forEach((obj) => {
+      const line = obj.currentEdge;
 
       addLineToMesh(
         glowingLineMeshRef.current,
         topLayerSceneRef.current.tempObject,
-        tempColor,
+        new THREE.Color(),
         line.coords,
         line.computedData,
-        lineIndex,
+        obj.currentEdgeIndex,
         false,
         0.00001,
         topLayerSceneRef.current.lineWidth
       );
     });
+    g_line_array = [];
   }, [updatedLineIndices, isStopped, glowingLineMeshRef, topLayerSceneRef]);
 
   useEffect(() => {
@@ -63,7 +64,11 @@ export const AlgorithmController = () => {
       };
 
       const processNode = async () => {
-        while (predecessors.get(currentNodeCoords) && !isStoppedRef.current) {
+        while (
+          predecessors &&
+          predecessors.get(currentNodeCoords) &&
+          !isStoppedRef.current
+        ) {
           let cameFromCoords = predecessors.get(currentNodeCoords);
 
           const coordinates1 = `[${cameFromCoords}],[${currentNodeCoords}]`;
@@ -89,6 +94,8 @@ export const AlgorithmController = () => {
             );
           }
 
+          g_line_array.push({ currentEdgeIndex, currentEdge });
+
           currentNodeCoords = cameFromCoords;
 
           await delay(3);
@@ -111,6 +118,7 @@ export const AlgorithmController = () => {
   useEffect(() => {
     if (isStopped) {
       setStarted(false);
+      setUpdatedLineIndices(g_line_array);
       pathfindingInstance.reset();
       return;
     }
@@ -123,8 +131,6 @@ export const AlgorithmController = () => {
     }
 
     const processSteps = () => {
-      let updatedLineIndices = [];
-
       for (let i = 0; i < cityGraph.algorithmSpeed; i++) {
         if (pathfindingInstance.finished) {
           setFinished(true);
@@ -149,14 +155,10 @@ export const AlgorithmController = () => {
             topLayerSceneRef.current.lineWidth
           );
 
-          updatedLineIndices.push(currentEdgeIndex);
+          g_line_array.push({ currentEdgeIndex, currentEdge });
         }
       }
 
-      setUpdatedLineIndices((prevIndices) => [
-        ...prevIndices,
-        ...updatedLineIndices,
-      ]);
       setTimeout(processSteps, 1);
     };
 
