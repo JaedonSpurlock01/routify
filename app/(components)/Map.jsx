@@ -1,13 +1,12 @@
 "use client";
 
+// Move these later
 const BLUE = 0xe1faf2;
 const RED = 0xfc2d49;
 const GREEN = 0x42f587;
 const MAP_COLOR = 0x83888c;
 
-import { useMemo, useState, useContext, useEffect, useRef } from "react";
-
-// threeJS
+// ThreeJS
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import { KernelSize, Resolution } from "postprocessing";
@@ -20,16 +19,26 @@ import {
   calculateMapCenter,
   worldPointFromScreenPoint,
 } from "@/lib/utilities/mapUtils";
-import { AlgorithmContext } from "@/lib/context/algorithm.context";
+
+// Third party libraries
 import { useEventListener } from "ahooks";
+
+// React
+import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
+import { useMemo, useState, useContext, useEffect, useRef } from "react";
 
 let viewport = new THREE.Vector2();
 
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
   const [bloom, setBloom] = useState(true);
-  const { setStartNode, setEndNode, cityGraph } = useContext(AlgorithmContext);
+
+  // State variables to control state of pathfinding
+  const { setStartNode, setEndNode, cityGraph, isStopped } =
+    useContext(AlgorithmContext);
+
+  // State variables used to control the map
   const {
     glowingLineMeshRef,
     lineMeshRef,
@@ -37,9 +46,11 @@ const CityMap = () => {
     topLayerSceneRef,
     parsedLineData,
   } = useContext(ThreeContext);
-  const { isStopped } = useContext(AlgorithmContext);
+
+  // Camera reference used to find cursor position
   const { camera } = useThree();
 
+  // Dot references to directly change their position
   const startDotRef = useRef();
   const endDotRef = useRef();
 
@@ -49,7 +60,7 @@ const CityMap = () => {
     [parsedLineData]
   );
 
-  // Add either a start dot or a end dot to the scene
+  // "Add" the dot to the scene (moving it from out-of-bounds)
   const addDot = (coordinates) => {
     // Get the closest graph node based on coordinates
     const closestNode = cityGraph.findNearestVertex(
@@ -58,12 +69,15 @@ const CityMap = () => {
       0
     );
 
+    // If the user is placing a start dot
     if (!dotCount) {
       setStartNode(closestNode);
       startDotRef.current.x = closestNode.x;
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
       setDotCount(1);
+
+      // If the user is placing an end dot
     } else if (dotCount === 1) {
       setEndNode(closestNode);
       endDotRef.current.x = closestNode.x;
@@ -73,20 +87,25 @@ const CityMap = () => {
     }
   };
 
+  // Click handling that first finds the position of the cursor,
+  // then "adds" the dot to the map (actually it just moves it from far away)
+  // Note: mounting and unmounting dots is not recommended by ThreeJS docs
   const handleClick = (event) => {
     if (!event) return;
 
-    viewport.x = (event.clientX / window.innerWidth) * 2 - 1;
-    viewport.y = -((event.clientY / window.innerHeight) * 2) + 1;
+    viewport.x = (event.clientX / window.innerWidth) * 2 - 1; // Find X NDC coordinate (-1 to 1)
+    viewport.y = -((event.clientY / window.innerHeight) * 2) + 1; // Find Y NDC coordinate (-1 to 1)
 
-    let canvasMousePos = worldPointFromScreenPoint(viewport, camera);
+    let canvasMousePos = worldPointFromScreenPoint(viewport, camera); // Find the position relative to ThreeJS scene
 
     addDot(canvasMousePos);
   };
   useEventListener("dblclick", handleClick);
 
+  // This event listener controls keyboard events
   useEventListener("keypress", (e) => {
     if (e.key === "c") {
+      // Resets the map
       topLayerSceneRef.current.updateScene(
         glowingLineMeshRef,
         cityGraph.edgeToIndex,
@@ -98,13 +117,15 @@ const CityMap = () => {
       setStartNode(null);
       setEndNode(null);
     } else if (e.key === "b") {
+      // Toggle the bloom
       setBloom(!bloom);
     }
   });
 
+  // This useEffect controls the creation of the map layers
   useEffect(() => {
-    // Set up threeJS map layers (base -> gray, top -> pathfinding layer)
     if (!baseLayerSceneRef.current) {
+      // Initialize the base layer
       baseLayerSceneRef.current = new SceneObject(
         MAP_COLOR,
         0.00005,
@@ -115,6 +136,7 @@ const CityMap = () => {
     }
 
     if (!topLayerSceneRef.current) {
+      // Initialize the pathfinding layer
       topLayerSceneRef.current = new SceneObject(
         BLUE,
         0.0001,
@@ -124,7 +146,7 @@ const CityMap = () => {
       );
     }
 
-    // Add lines to ThreeJS scene
+    // Add the lines to each layer
     baseLayerSceneRef.current.updateScene(lineMeshRef, null, true);
     topLayerSceneRef.current.updateScene(
       glowingLineMeshRef,
@@ -147,6 +169,7 @@ const CityMap = () => {
     center,
   ]);
 
+  // This useEffect controls the reset of the dots
   useEffect(() => {
     if (isStopped && startDotRef.current && endDotRef.current) {
       setDotCount(0);
@@ -157,24 +180,31 @@ const CityMap = () => {
     }
   }, [isStopped, setStartNode, setEndNode]);
 
+  // The ThreeJS canvas consists of four major assets:
+  //  - The base layer: the main map layer
+  //  - The pathfinding layer: an invisible copy of the base layer
+  //  - The green dot controlled by the user
+  //  - The red dot controlled by the user
   return (
     <>
+      {/* The fun glow! */}
       {bloom && (
         <EffectComposer>
           <Bloom
-            intensity={0.5} // The bloom intensity.
+            intensity={0.5} // The bloom intensity
             kernelSize={KernelSize.VERY_SMALL} // blur kernel size
-            luminanceThreshold={0.25} // luminance threshold. Raise this value to mask out darker elements in the scene.
+            luminanceThreshold={0.25} // luminance threshold. Raise this value to mask out darker elements in the scene
             luminanceSmoothing={0.025} // smoothness of the luminance threshold. Range is [0, 1]
-            mipmapBlur={true} // Enables or disables mipmap blur.
-            resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution.
-            resolutionY={Resolution.AUTO_SIZE} // The vertical resolution.
+            mipmapBlur={true} // Enables or disables mipmap blur
+            resolutionX={Resolution.AUTO_SIZE} // The horizontal resolution
+            resolutionY={Resolution.AUTO_SIZE} // The vertical resolution
           />
         </EffectComposer>
       )}
 
       <ambientLight intensity={10} />
 
+      {/* The base map layer */}
       <instancedMesh
         ref={lineMeshRef}
         args={[null, null, parsedLineData.length]}
@@ -187,6 +217,7 @@ const CityMap = () => {
         />
       </instancedMesh>
 
+      {/* The pathfinding map layer */}
       <instancedMesh
         ref={glowingLineMeshRef}
         args={[null, null, parsedLineData.length]}
@@ -199,6 +230,7 @@ const CityMap = () => {
         />
       </instancedMesh>
 
+      {/* Green dot on map */}
       <mesh
         ref={startDotRef}
         position={[
@@ -211,6 +243,7 @@ const CityMap = () => {
         <meshStandardMaterial color={GREEN} />
       </mesh>
 
+      {/* Red dot on map */}
       <mesh
         ref={endDotRef}
         position={[
