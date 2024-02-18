@@ -2,21 +2,32 @@ Routify is a pathfinding visualizer that is bootstrapped with [`create-next-app`
 
 It is designed to work with any city listed on [`OpenStreetMap`](https://www.openstreetmap.org/).
 
-## Getting Started
+## How it works
+This project uses ThreeJS for rendering the maps 
 
-First, run the development server:
+The city data is fetched by the [`Overpass API`](http://overpass-turbo.eu/) offered through OpenStreetMap. The API is free, but it is rate limited and its good to avoid heavy use of external APIs. Therefore, we are caching cities and storing it with Amazon S3.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+We use [`Nominatim`](https://nominatim.openstreetmap.org/) for city search querying. When a user clicks a result, we use that id to search in the cache if it exists. If it doesn't then we fallback to the Overpass API.
+
+## Development & Installation
+```
+1. clone the repository
+2. run "npm install"
+3. run "npm run dev"
+4. open the browser given by the CLI
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Algorithms Used
+A* Search
+Greedy Search
+Breadth-Firth-Search
+Depth-First-Search (Very Slow)
 
-## How it works
-This project uses ThreeJS for rendering the maps and the data is gathered by the Overpass API offered through OpenStreetMap.
+## Inspiration
+This project is heavily inspired by the three following sources, please go to them and take a look at their projects as well.
+
+[`Python Rendered Pathfinding Visualizer`](https://youtu.be/CgW0HPHqFE8?si=BFFg43Q4frz7BKm6)
+[`City Pathfinding Visualizer by https://github.com/honzaap`](https://github.com/honzaap/Pathfinding)
+[`City Roads by https://github.com/anvaka`](https://github.com/anvaka/city-roads)
+
+## License
