@@ -27,8 +27,8 @@ Depth-First-Search (Very Slow) <br/>
 This project is heavily inspired by the three following sources, please go to them and take a look at their projects as well.
 
 [`Python Rendered Pathfinding Visualizer`](https://youtu.be/CgW0HPHqFE8?si=BFFg43Q4frz7BKm6) <br/>
-[`City Pathfinding Visualizer`](https://github.com/honzaap/Pathfinding) by (https://github.com/honzaap)<br/>
-[`City Roads`](https://github.com/anvaka/city-roads) by (https://github.com/anvaka)<br/>
+[`City Pathfinding Visualizer`](https://github.com/honzaap/Pathfinding) by https://github.com/honzaap<br/>
+[`City Roads`](https://github.com/anvaka/city-roads) by https://github.com/anvaka<br/>
 
 ## License
 None just yet, will get one
