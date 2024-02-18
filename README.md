@@ -1,4 +1,5 @@
-Routify is a pathfinding visualizer that is bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Routify
+A beautiful pathfinding visualizer that is bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 It is designed to work with any city listed on [`OpenStreetMap`](https://www.openstreetmap.org/).
 
