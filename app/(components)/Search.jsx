@@ -1,13 +1,13 @@
 import parseLineData from "@/lib/services/parsing";
-import React, { useState, useContext } from "react";
-import { IoIosSearch } from "react-icons/io";
-import { RotatingLines, ProgressBar } from "react-loader-spinner";
-import jsonData from "@/lib/testing/test-cities/san-diego.json";
+import React, { useState, useContext, useMemo, useEffect } from "react";
 
 import { ThreeContext } from "@/lib/context/three.context";
 import request from "@/lib/services/request";
-import encodeMap from "@/lib/caching/encode";
-import decodeMap from "@/lib/caching/decode";
+
+import { Progress } from "./Progress";
+import { SearchBox } from "./SearchBox";
+import { Suggestions } from "./Suggestions";
+import { Hero } from "./Hero";
 
 export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [enteredInput, setEnteredInput] = useState("");
@@ -16,7 +16,21 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [selectedSuggestion, setSelectedSuggestion] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
+  const [bytesLoaded, setBytesLoaded] = useState(0);
+  const [percentageComplete, setPercentageComplete] = useState(0);
+  const [connecting, setConnecting] = useState(true);
   const { setParsedLineData } = useContext(ThreeContext);
+
+  const updateProgress = (event) => {
+    if (event.lengthComputable) {
+      setBytesLoaded(event.loaded);
+      setPercentageComplete((event.loaded / event.total) * 100);
+    } else {
+      setBytesLoaded(event.loaded);
+      setPercentageComplete(100);
+    }
+    setConnecting(false);
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -63,25 +77,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setSelectedSuggestion(suggestion.display_name);
     setCity(suggestion.name);
 
-    setParsedLineData(parseLineData(jsonData));
-    setMapIsReady(true);
-    setSendingRequest(false);
-
-    return;
-
-    encodeMap(
-      suggestion.name,
-      new Date().toDateString(),
-      suggestion.osm_id,
-      parsedLineData
-    ).then((byteData) => {
-      decodeMap(byteData).then((decoded) => {
-        setParsedLineData(decoded.linesList);
-        setSendingRequest(false);
-      });
-    });
-
-    request(suggestion)
+    request(suggestion, updateProgress)
       .then((response) => {
         setParsedLineData(parseLineData(response));
         setMapIsReady(true);
@@ -98,73 +94,32 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
 
   return (
     <div className="items-center flex flex-col mb-20">
-      <h1 className="text-center text-3xl text-neutral-200 mb-2 sm:text-6xl">
-        Routify
-      </h1>
-      <h2 className="mb-5 sm:mb-10 text-neutral-500 text-center pl-2 pr-2 text-xs sm:text-lg">
-        Your ultimate source for pathfinding algorithms in any city.
-      </h2>
+      <Hero />
       {sendingRequest && (
-        <div className="flex flex-col items-center justify-center">
-          <ProgressBar width={50} borderColor="white" barColor="#e8c497" />
-          <p className="text-neutral-200">
-            Currently loading {selectedSuggestion}
-          </p>
-        </div>
+        <Progress
+          name={selectedSuggestion}
+          bytesLoaded={bytesLoaded}
+          percentage={percentageComplete}
+          loading={connecting}
+        />
       )}
-      {!sendingRequest && (
-        <form onSubmit={onSubmit} className="relative">
-          <input
-            placeholder="Enter a city"
-            value={enteredInput}
-            onChange={(e) => setEnteredInput(e.target.value)}
-            type="text"
-            className="rounded-lg p-3 pl-5 pr-10 text-neutral-800 text-xs sm:text-sm focus:outline-none mb-4"
-          />
-          {!loading && (
-            <a
-              href="#"
-              onClick={onSubmit}
-              type="submit"
-              className="absolute right-5 top-1/2 transform -translate-y-4 bg-white"
-            >
-              <IoIosSearch />
-            </a>
-          )}
 
-          {loading && (
-            <div className="absolute right-5 top-1/2 transform -translate-y-4 bg-white">
-              <RotatingLines
-                visible={true}
-                height="18"
-                width="18"
-                strokeColor="grey"
-                strokeWidth="5"
-                animationDuration="0.75"
-              />
-            </div>
-          )}
-        </form>
+      {!sendingRequest && (
+        <SearchBox
+          onSubmit={onSubmit}
+          enteredInput={enteredInput}
+          setEnteredInput={setEnteredInput}
+          loading={loading}
+        />
       )}
 
       {!loading && !sendingRequest && (
         <div>
           {suggestionsLoaded && suggestions.length > 0 && (
-            <div>
-              <ul className="w-[15rem] text-neutral-200 text-xs bg-neutral-800 p-2 flex flex-col rounded-lg overflow-hidden overflow-y-auto max-h-72">
-                {suggestions.map((suggestion, index) => (
-                  <li
-                    key={index}
-                    className="mb-2 hover:bg-neutral-900 rounded-lg p-1 hover:cursor-pointer"
-                    onClick={() => pickSuggestion(suggestion)}
-                  >
-                    <span>{suggestion.display_name}</span>
-                    <br />
-                    <small className="text-rose-500">({suggestion.type})</small>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Suggestions
+              suggestions={suggestions}
+              pickSuggestion={pickSuggestion}
+            />
           )}
           {suggestionsLoaded && suggestions.length === 0 && (
             <div className="text-xs text-rose-500">
