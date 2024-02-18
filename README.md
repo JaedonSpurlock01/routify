@@ -18,16 +18,17 @@ We use [`Nominatim`](https://nominatim.openstreetmap.org/) for city search query
 ```
 
 ## Algorithms Used
-A* Search
-Greedy Search
-Breadth-Firth-Search
-Depth-First-Search (Very Slow)
+A* Search <br/>
+Greedy Search <br/>
+Breadth-Firth-Search <br/>
+Depth-First-Search (Very Slow) <br/>
 
 ## Inspiration
 This project is heavily inspired by the three following sources, please go to them and take a look at their projects as well.
 
-[`Python Rendered Pathfinding Visualizer`](https://youtu.be/CgW0HPHqFE8?si=BFFg43Q4frz7BKm6)
-[`City Pathfinding Visualizer by https://github.com/honzaap`](https://github.com/honzaap/Pathfinding)
-[`City Roads by https://github.com/anvaka`](https://github.com/anvaka/city-roads)
+[`Python Rendered Pathfinding Visualizer`](https://youtu.be/CgW0HPHqFE8?si=BFFg43Q4frz7BKm6) <br/>
+[`City Pathfinding Visualizer by https://github.com/honzaap`](https://github.com/honzaap/Pathfinding) <br/>
+[`City Roads by https://github.com/anvaka`](https://github.com/anvaka/city-roads) <br/>
 
 ## License
+None just yet, will get one
