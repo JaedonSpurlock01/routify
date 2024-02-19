@@ -61,8 +61,8 @@ export default function Home() {
               />
             </Canvas>
             <NavBar />
-            <div className="absolute bottom-6 right-6 text-neutral-100 items-center justify-center flex-col flex">
-              <h1>{city}</h1>
+            <div className="absolute bottom-6 right-6 text-neutral-100 flex-col flex text-right">
+              <h1 className="mb-1 text-2xl">{city}</h1>
               <a
                 href="https://www.openstreetmap.org/about/"
                 target="_blank"
