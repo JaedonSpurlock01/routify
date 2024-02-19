@@ -36,10 +36,12 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
   const updateProgress = (event) => {
     if (event.lengthComputable) {
       setBytesLoaded(event.loaded);
-      setPercentageComplete((event.loaded / event.total) * 100);
+      setPercentageComplete(event.loaded / event.total);
+      console.log(event.loaded / event.total);
+      console.log((event.loaded / event.total) * 100);
     } else {
       setBytesLoaded(event.loaded);
-      setPercentageComplete(100);
+      setPercentageComplete(-1);
     }
     setConnecting(false);
   };

@@ -21,20 +21,22 @@ export const Progress = ({
               width: "100%",
             }}
           >
-            <LinearProgress
-              value={percentage}
-              variant="determinate"
-              sx={{
-                borderRadius: 10,
-                [`&.${linearProgressClasses.colorPrimary}`]: {
-                  backgroundColor: "#737373",
-                },
-                [`& .${linearProgressClasses.bar}`]: {
+            {percentage >= 0 && (
+              <LinearProgress
+                value={percentage}
+                variant="determinate"
+                sx={{
                   borderRadius: 10,
-                  backgroundColor: "#ffffff",
-                },
-              }}
-            />
+                  [`&.${linearProgressClasses.colorPrimary}`]: {
+                    backgroundColor: "#737373",
+                  },
+                  [`& .${linearProgressClasses.bar}`]: {
+                    borderRadius: 10,
+                    backgroundColor: "#ffffff",
+                  },
+                }}
+              />
+            )}
           </Box>
         </div>
       )}
