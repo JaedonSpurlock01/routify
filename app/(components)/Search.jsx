@@ -30,7 +30,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     cancelEvent.emit("cancel");
     setCancel(false);
     setSendingRequest(false);
-    setLoading(false);
+    setConnecting(true);
   }, [cancelEvent, cancel]);
 
   const updateProgress = (event) => {
