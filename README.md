@@ -18,6 +18,9 @@ We use [`Nominatim`](https://nominatim.openstreetmap.org/) for city search query
 4. open the browser given by the CLI
 ```
 
+## Limitations
+Routify can handle large cities up to 200MB, which can include San Diego, Seattle, Columbus, etc. However, once you start to download larger cities, it will begin to get very laggy. We are downloading millions of lines after all.
+
 ## Algorithms Used
 A* Search <br/>
 Greedy Search <br/>
@@ -32,4 +35,4 @@ This project is heavily inspired by the three following sources, please go to th
 [`City Roads`](https://github.com/anvaka/city-roads) by https://github.com/anvaka<br/>
 
 ## License
-None just yet, will get one
+The source code is licensed under MIT license
