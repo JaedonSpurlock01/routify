@@ -49,7 +49,7 @@ export const AlgorithmController = () => {
       );
     });
     g_line_array = [];
-  }, [updatedLineIndices, isStopped, glowingLineMeshRef, topLayerSceneRef]);
+  }, [isStopped, glowingLineMeshRef, topLayerSceneRef]);
 
   useEffect(() => {
     if (finished && !isStopped) {

@@ -19,7 +19,19 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [bytesLoaded, setBytesLoaded] = useState(0);
   const [percentageComplete, setPercentageComplete] = useState(0);
   const [connecting, setConnecting] = useState(true);
+  const [cancel, setCancel] = useState(false);
   const { setParsedLineData } = useContext(ThreeContext);
+
+  const EventEmitter = require("events");
+  const cancelEvent = useMemo(() => new EventEmitter(), [EventEmitter]);
+
+  useEffect(() => {
+    if (!cancel) return;
+    cancelEvent.emit("cancel");
+    setCancel(false);
+    setSendingRequest(false);
+    setLoading(false);
+  }, [cancelEvent, cancel]);
 
   const updateProgress = (event) => {
     if (event.lengthComputable) {
@@ -77,7 +89,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setSelectedSuggestion(suggestion.display_name);
     setCity(suggestion.name);
 
-    request(suggestion, updateProgress)
+    request(suggestion, updateProgress, cancelEvent)
       .then((response) => {
         setParsedLineData(parseLineData(response));
         setMapIsReady(true);
@@ -101,6 +113,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
           bytesLoaded={bytesLoaded}
           percentage={percentageComplete}
           loading={connecting}
+          setCancel={setCancel}
         />
       )}
 
