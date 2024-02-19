@@ -9,41 +9,58 @@ import { IoIosArrowRoundBack } from "react-icons/io";
 import { Switch } from "@mui/material";
 
 export const NavBar = () => {
-  const [settingsOn, setSettingsOn] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState(null);
+
+  const handleColorClick = (color) => {
+    setSelectedColor(color);
+  };
 
   return (
     <div className="top-3 absolute w-screen flex justify-between">
-      <div>
+      <div className="z-30">
         <button
           className={`rounded-full text-neutral-100 bg-neutral-800 text-2xl p-2 ml-6 -mr-6 w-10 h-10 ${
-            settingsOn ? "" : "hover:shadow-lg hover:shadow-neutral-800"
+            isOpen ? "" : "hover:shadow-lg hover:shadow-neutral-800"
           } transition-all absolute z-10`}
         >
-          <IoMdSettings onClick={() => setSettingsOn(!settingsOn)} />
+          <IoMdSettings onClick={() => setIsOpen(!isOpen)} />
         </button>
-        {settingsOn && (
-          <div className="md:h-[25rem] md:w-[15rem] lg:w-[25rem] lg:h-[30rem] bg-neutral-800 rounded-xl text-left p-4 space-y-4 absolute left-5 pt-[3rem] text-neutral-100 text-xl">
+        {isOpen && (
+          <div
+            className="md:h-[40rem] md:w-[15rem] lg:w-[25rem] lg:h-[30rem] bg-neutral-800 rounded-xl text-left p-4 space-y-4
+            absolute md:left-6 pt-[3rem] text-neutral-100 text-xl transition-all origin-top-left"
+            style={{ animation: "openFromTopLeft 0.2s ease-in-out" }}
+          >
             <div>
               <p>Display</p>
-              <div className="text-base flex flex-row items-center">
+              <div className="text-base flex flex-row items-center flex-wrap">
                 <p className="text-neutral-300">Colors</p>
                 <div className="flex flex-row space-x-3 ml-auto">
-                  <div className="flex items-center justify-center flex-col">
-                    <div className="w-[2rem] h-[2rem] bg-slate-800 rounded-lg border border-neutral-600" />
-                    <p className="text-xs">Background</p>
-                  </div>
-                  <div className="flex items-center justify-center flex-col">
-                    <div className="w-[2rem] h-[2rem] bg-slate-500 rounded-lg border border-neutral-600" />
-                    <p className="text-xs">Map</p>
-                  </div>
-                  <div className="flex items-center justify-center flex-col">
-                    <div className="w-[2rem] h-[2rem] bg-cyan-500 rounded-lg border border-neutral-600" />
-                    <p className="text-xs">Search</p>
-                  </div>
-                  <div className="flex items-center justify-center flex-col">
-                    <div className="w-[2rem] h-[2rem] bg-rose-500 rounded-lg border border-neutral-600" />
-                    <p className="text-xs">Path</p>
-                  </div>
+                  {[
+                    { color: "slate-800", label: "Background" },
+                    { color: "slate-500", label: "Map" },
+                    { color: "cyan-500", label: "Search" },
+                    { color: "rose-500", label: "Path" },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-center flex-col relative"
+                      onClick={() => handleColorClick(item.color)}
+                      onBlur={() => setSelectedColor(null)}
+                      tabIndex={0}
+                    >
+                      <div
+                        className={`w-[2rem] h-[2rem] bg-${item.color} rounded-lg border border-neutral-600 hover:cursor-pointer`}
+                      />
+                      <p className="text-xs">{item.label}</p>
+                      {selectedColor === item.color && (
+                        <div className="absolute top-10 left-6 z-50">
+                          <SketchPicker />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
               <div className="text-base flex flex-row mt-3 -mb-2">
