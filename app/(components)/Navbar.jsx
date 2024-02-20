@@ -28,7 +28,7 @@ export const NavBar = () => {
         </button>
         {isOpen && (
           <div
-            className="md:w-[15rem] lg:w-[25rem] bg-neutral-800 rounded-xl text-left p-4 space-y-4
+            className="md:w-[15rem] lg:w-[23rem] bg-neutral-800 rounded-xl text-left p-4 space-y-4
             absolute md:left-6 pt-[3rem] text-neutral-100 text-xl transition-all origin-top-left"
             style={{ animation: "openFromTopLeft 0.2s ease-in-out" }}
           >
@@ -73,22 +73,20 @@ export const NavBar = () => {
             <div>
               Keybinds
               <div className="text-lg flex flex-row flex-wrap items-center justify-center space-x-4 text-neutral-300">
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-lg">B</p>
-                  <p className="text-sm">Toggle Bloom</p>
-                </div>
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-lg">C</p>
-                  <p className="text-sm">Reset Map</p>
-                </div>
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-lg">WASD</p>
-                  <p className="text-sm">Move Camera</p>
-                </div>
-                <div className="flex flex-col items-center justify-center">
-                  <p className="text-lg">Space</p>
-                  <p className="text-sm">Start Search</p>
-                </div>
+                {[
+                  { key: "B", desc: "Toggle Bloom" },
+                  { key: "C", desc: "Reset Map" },
+                  { key: "WASD", desc: "Move Camera" },
+                  { key: "Space", desc: "Start Search" },
+                ].map((keybind, index) => (
+                  <div
+                    className="flex flex-col items-center justify-center"
+                    key={index}
+                  >
+                    <p>{keybind.key}</p>
+                    <p className="text-xs">{keybind.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
             <div>
