@@ -28,7 +28,7 @@ export const NavBar = () => {
         </button>
         {isOpen && (
           <div
-            className="md:h-[40rem] md:w-[15rem] lg:w-[25rem] lg:h-[30rem] bg-neutral-800 rounded-xl text-left p-4 space-y-4
+            className="md:w-[15rem] lg:w-[25rem] bg-neutral-800 rounded-xl text-left p-4 space-y-4
             absolute md:left-6 pt-[3rem] text-neutral-100 text-xl transition-all origin-top-left"
             style={{ animation: "openFromTopLeft 0.2s ease-in-out" }}
           >
