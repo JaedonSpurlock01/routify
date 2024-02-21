@@ -6,7 +6,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useState } from "react";
 import { CitySearch } from "./(components)/Search";
-import { NavBar } from "./(components)/Navbar";
+import { NavBar } from "./(components)/Navbar/Navbar";
 
 import Image from "next/image";
 
