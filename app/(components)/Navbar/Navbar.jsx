@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoMdSettings } from "react-icons/io";
-import { Dropdown } from "./dropdown";
+import { Dropdown } from "./Dropdown";
 import { StartButton } from "./StartButton";
 import { SpeedSlider } from "./Slider";
 import { GithubButton } from "./GithubButton";
