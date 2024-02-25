@@ -20,6 +20,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [percentageComplete, setPercentageComplete] = useState(0);
   const [connecting, setConnecting] = useState(true);
   const [cancel, setCancel] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const { setParsedLineData } = useContext(ThreeContext);
 
   const EventEmitter = require("events");
@@ -31,6 +32,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setCancel(false);
     setSendingRequest(false);
     setConnecting(true);
+    setLoadError(false);
   }, [cancelEvent, cancel]);
 
   const updateProgress = (event) => {
@@ -90,6 +92,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setSendingRequest(true);
     setSelectedSuggestion(suggestion.display_name);
     setCity(suggestion.name);
+    setLoadError(false);
 
     try {
       // Check if its in the cache, if so fetch it, otherwise use Overpass API
@@ -119,17 +122,22 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
             });
           })
           .catch((error) => {
-            console.log(error);
+            console.log("Error in fallback request:", error);
           })
           .finally(() => {
             setSuggestions([]);
             setSuggestionsLoaded(false);
             setSendingRequest(false);
+            setLoadError(false);
           });
+      } else if (response.error) {
+        setSendingRequest(false);
+        setConnecting(true);
+        setLoadError(true);
       } else {
         // Fetched data from cache
         setParsedLineData(responseData.linesList);
-
+        setLoadError(false);
         setMapIsReady(true);
         setSuggestions([]);
         setSuggestionsLoaded(false);
@@ -137,7 +145,10 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
         setCity(responseData.name);
       }
     } catch (error) {
-      console.log(error);
+      console.log("Error in pickSuggestion:", error);
+      setLoadError(true);
+      setSendingRequest(false);
+      setConnecting(true);
     }
   };
 
@@ -161,6 +172,12 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
           setEnteredInput={setEnteredInput}
           loading={loading}
         />
+      )}
+
+      {loadError && (
+        <div className="text-xs text-rose-500">
+          Could not load city. Either try again or try a new city.
+        </div>
       )}
 
       {!loading && !sendingRequest && (

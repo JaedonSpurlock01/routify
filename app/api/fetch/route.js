@@ -14,6 +14,7 @@ export async function POST(req) {
     const s3 = new AWS.S3();
     const input = await req.json();
     const osm_id = input.suggestion.osm_id;
+    const name = input.suggestion.name;
 
     // Initialize search parameters to find the city in S3
     const searchParams = {
@@ -25,6 +26,7 @@ export async function POST(req) {
       // If it is in the database, download it
       const dbRequest = s3.getObject(searchParams);
 
+      console.log(`${name} was found in cache, downloading data...`);
       const data = await new Promise((resolve, reject) => {
         dbRequest.send((err, data) => {
           if (err) reject(err);
@@ -32,12 +34,20 @@ export async function POST(req) {
         });
       });
 
+      console.log(`Download complete! Now decoding ${name}`);
       const decodedData = await decodeMap(data.Body);
       return new Response(JSON.stringify(decodedData));
     } catch (error) {
-      return new Response(JSON.stringify({ response: "no-cache" }));
+      if (error.code === "NoSuchKey") {
+        console.log(`${name} is not in cache, using fallback API`);
+        return new Response(JSON.stringify({ response: "no-cache" }));
+      } else {
+        console.error("Error fetching data from S3:", error);
+        return new Response(JSON.stringify({ error: error.message }));
+      }
     }
   } catch (error) {
+    console.error("Internal system error:", error);
     return new Response(JSON.stringify({ error: "Internal System Error" }));
   }
 }
