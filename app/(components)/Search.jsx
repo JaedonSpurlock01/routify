@@ -1,13 +1,13 @@
-import parseLineData from "@/lib/services/parsing";
 import React, { useState, useContext, useMemo, useEffect } from "react";
 
 import { ThreeContext } from "@/lib/context/three.context";
-import request from "@/lib/services/request";
 
 import { Progress } from "./Progress";
 import { SearchBox } from "./SearchBox";
 import { Suggestions } from "./Suggestions";
 import { Hero } from "./Hero";
+import sendRequest from "@/lib/services/request";
+import parseLineData from "@/lib/services/parsing";
 
 export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [enteredInput, setEnteredInput] = useState("");
@@ -85,25 +85,49 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     }
   };
 
-  const pickSuggestion = (suggestion) => {
+  const pickSuggestion = async (suggestion) => {
     if (sendingRequest === true) return;
     setSendingRequest(true);
     setSelectedSuggestion(suggestion.display_name);
     setCity(suggestion.name);
 
-    request(suggestion, updateProgress, cancelEvent)
-      .then((response) => {
-        setParsedLineData(parseLineData(response));
+    try {
+      // Check if its in the cache, if so fetch it, otherwise use Overpass API
+      const response = await fetch("/api/fetch", {
+        method: "POST",
+        body: JSON.stringify({ suggestion }),
+      });
+
+      const responseData = await response.json();
+
+      // Is not in cache, use fallback
+      if (responseData.response && responseData.response === "no-cache") {
+        sendRequest(suggestion, updateProgress, cancelEvent)
+          .then((response) => {
+            setParsedLineData(parseLineData(response));
+            setMapIsReady(true);
+          })
+          .catch((error) => {
+            console.log(error);
+          })
+          .finally(() => {
+            setSuggestions([]);
+            setSuggestionsLoaded(false);
+            setSendingRequest(false);
+          });
+      } else {
+        // Fetched data from cache
+        setParsedLineData(responseData.linesList);
+
         setMapIsReady(true);
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-      .finally(() => {
         setSuggestions([]);
         setSuggestionsLoaded(false);
         setSendingRequest(false);
-      });
+        setCity(responseData.data.name);
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
