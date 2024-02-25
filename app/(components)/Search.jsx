@@ -104,8 +104,19 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
       if (responseData.response && responseData.response === "no-cache") {
         sendRequest(suggestion, updateProgress, cancelEvent)
           .then((response) => {
-            setParsedLineData(parseLineData(response));
+            const linesList = parseLineData(response);
+            setParsedLineData(linesList);
             setMapIsReady(true);
+
+            fetch("/api/save", {
+              method: "POST",
+              body: JSON.stringify({
+                name: suggestion.name,
+                date: Date(),
+                osm_id: suggestion.osm_id,
+                linesList,
+              }),
+            });
           })
           .catch((error) => {
             console.log(error);
@@ -123,7 +134,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
         setSuggestions([]);
         setSuggestionsLoaded(false);
         setSendingRequest(false);
-        setCity(responseData.data.name);
+        setCity(responseData.name);
       }
     } catch (error) {
       console.log(error);
