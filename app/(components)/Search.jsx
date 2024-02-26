@@ -125,12 +125,10 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
             console.log("Error in fallback request:", error);
           })
           .finally(() => {
-            setSuggestions([]);
-            setSuggestionsLoaded(false);
             setSendingRequest(false);
             setLoadError(false);
           });
-      } else if (response.error) {
+      } else if (!responseData.linesList) {
         setSendingRequest(false);
         setConnecting(true);
         setLoadError(true);
@@ -139,11 +137,12 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
         setParsedLineData(responseData.linesList);
         setLoadError(false);
         setMapIsReady(true);
-        setSuggestions([]);
-        setSuggestionsLoaded(false);
         setSendingRequest(false);
         setCity(responseData.name);
       }
+
+      setSuggestions([]);
+      setSuggestionsLoaded(false);
     } catch (error) {
       console.log("Error in pickSuggestion:", error);
       setLoadError(true);

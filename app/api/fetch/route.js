@@ -35,8 +35,12 @@ export async function POST(req) {
       });
 
       console.log(`Download complete! Now decoding ${name}`);
-      const decodedData = await decodeMap(data.Body);
-      return new Response(JSON.stringify(decodedData));
+      if (data.Body) {
+        const decodedData = await decodeMap(data.Body);
+        return new Response(JSON.stringify(decodedData));
+      } else {
+        return new Response(JSON.stringify({ error: error.message }));
+      }
     } catch (error) {
       if (error.code === "NoSuchKey") {
         console.log(`${name} is not in cache, using fallback API`);
