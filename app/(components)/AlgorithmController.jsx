@@ -5,6 +5,7 @@ import PathfindingInstance from "@/lib/models/PathfindingInstance";
 import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
 import * as THREE from "three";
+import { ColorContext } from "@/lib/context/color.context";
 
 let g_line_array = [];
 
@@ -12,6 +13,7 @@ export const AlgorithmController = () => {
   const { cityGraph, isAlgorithmReady, startNode, endNode, isStopped } =
     useContext(AlgorithmContext);
   const { glowingLineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
+  const { pathColor } = useContext(ColorContext);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
   const [updatedLineIndices, setUpdatedLineIndices] = useState([]);
@@ -31,6 +33,7 @@ export const AlgorithmController = () => {
     return instance;
   }, [startNode, endNode, cityGraph]);
 
+  // This useEffect clears the new lines when the stop button is pressed
   useEffect(() => {
     if (!isStopped) return;
     updatedLineIndices.forEach((obj) => {
@@ -51,11 +54,11 @@ export const AlgorithmController = () => {
     g_line_array = [];
   }, [isStopped, glowingLineMeshRef, topLayerSceneRef]);
 
+  // This useEffect controls the "Path" found
   useEffect(() => {
     if (finished && !isStopped) {
       let currentNodeCoords = endNode.createCompositeKey();
       const tempColor = new THREE.Color();
-      tempColor.setHex(0xff5454).clone();
 
       const predecessors = pathfindingInstance.getPredecessors();
 
@@ -84,7 +87,7 @@ export const AlgorithmController = () => {
             addLineToMesh(
               glowingLineMeshRef.current,
               topLayerSceneRef.current.tempObject,
-              tempColor,
+              tempColor.setHex(pathColor).clone(),
               currentEdge.coords,
               currentEdge.computedData,
               currentEdgeIndex,
@@ -115,6 +118,7 @@ export const AlgorithmController = () => {
     finished,
   ]);
 
+  // This useEffect controls the pathfinding
   useEffect(() => {
     if (isStopped) {
       setStarted(false);

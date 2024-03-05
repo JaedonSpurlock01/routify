@@ -1,11 +1,5 @@
 "use client";
 
-// Move these later
-const BLUE = 0xe1faf2;
-const RED = 0xfc2d49;
-const GREEN = 0x42f587;
-const MAP_COLOR = 0x83888c;
-
 // ThreeJS
 import * as THREE from "three";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
@@ -27,6 +21,7 @@ import { useEventListener } from "ahooks";
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
 import { useMemo, useState, useContext, useEffect, useRef } from "react";
+import { ColorContext } from "@/lib/context/color.context";
 
 let viewport = new THREE.Vector2();
 
@@ -46,6 +41,11 @@ const CityMap = () => {
     topLayerSceneRef,
     parsedLineData,
   } = useContext(ThreeContext);
+
+  // Color references
+  const { startDotColor, endDotColor, mapColor, searchColor } =
+    useContext(ColorContext);
+  const [prevColor, setPrevColor] = useState(mapColor);
 
   // Camera reference used to find cursor position
   const { camera } = useThree();
@@ -127,22 +127,22 @@ const CityMap = () => {
     if (!baseLayerSceneRef.current) {
       // Initialize the base layer
       baseLayerSceneRef.current = new SceneObject(
-        MAP_COLOR,
+        mapColor,
         0.00005,
         0,
         parsedLineData.length,
-        generateSegmentProperties(parsedLineData, center, MAP_COLOR)
+        generateSegmentProperties(parsedLineData, center, mapColor)
       );
     }
 
     if (!topLayerSceneRef.current) {
       // Initialize the pathfinding layer
       topLayerSceneRef.current = new SceneObject(
-        BLUE,
+        searchColor,
         0.0001,
         0.00001,
         parsedLineData.length,
-        generateSegmentProperties(parsedLineData, center, BLUE)
+        generateSegmentProperties(parsedLineData, center, searchColor)
       );
     }
 
@@ -179,6 +179,20 @@ const CityMap = () => {
       setEndNode(null);
     }
   }, [isStopped, setStartNode, setEndNode]);
+
+  // This useEffect controls the color of map
+  useEffect(() => {
+    if (prevColor === mapColor) return; // Avoid unnecessary map updates
+    baseLayerSceneRef.current.updateScene(lineMeshRef, null, true, mapColor);
+    setPrevColor(mapColor);
+  }, [mapColor]);
+
+  // This useEffect controls the color of the search
+  useEffect(() => {
+    if (prevColor === searchColor) return; // Avoid unnecessary map updates
+    topLayerSceneRef.current.changeColor(searchColor);
+    setPrevColor(searchColor);
+  }, [searchColor]);
 
   // The ThreeJS canvas consists of four major assets:
   //  - The base layer: the main map layer
@@ -240,7 +254,7 @@ const CityMap = () => {
         ]}
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
-        <meshStandardMaterial color={GREEN} />
+        <meshStandardMaterial color={startDotColor} />
       </mesh>
 
       {/* Red dot on map */}
@@ -253,7 +267,7 @@ const CityMap = () => {
         ]}
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
-        <meshStandardMaterial color={RED} />
+        <meshStandardMaterial color={endDotColor} />
       </mesh>
     </>
   );
