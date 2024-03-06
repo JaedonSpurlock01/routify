@@ -22,12 +22,12 @@ import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
 import { useMemo, useState, useContext, useEffect, useRef } from "react";
 import { ColorContext } from "@/lib/context/color.context";
+import toast from "react-hot-toast";
 
 let viewport = new THREE.Vector2();
 
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
-  const [bloom, setBloom] = useState(true);
 
   // State variables to control state of pathfinding
   const { setStartNode, setEndNode, cityGraph, isStopped } =
@@ -43,8 +43,14 @@ const CityMap = () => {
   } = useContext(ThreeContext);
 
   // Color references
-  const { startDotColor, endDotColor, mapColor, searchColor } =
-    useContext(ColorContext);
+  const {
+    startDotColor,
+    endDotColor,
+    mapColor,
+    searchColor,
+    bloomToggle,
+    setBloomToggle,
+  } = useContext(ColorContext);
   const [prevColor, setPrevColor] = useState(mapColor);
 
   // Camera reference used to find cursor position
@@ -76,6 +82,12 @@ const CityMap = () => {
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
       setDotCount(1);
+      toast.success("Added start at:\n9534 Cypress St.Garland, TX 75043", {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+      });
 
       // If the user is placing an end dot
     } else if (dotCount === 1) {
@@ -84,6 +96,15 @@ const CityMap = () => {
       endDotRef.current.y = closestNode.y;
       endDotRef.current.z = 0;
       setDotCount(2);
+      toast.success(
+        "Added goal at:\n649 W. El Dorado Street Suitland, MD 20746",
+        {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+        }
+      );
     }
   };
 
@@ -106,6 +127,13 @@ const CityMap = () => {
   useEventListener("keypress", (e) => {
     if (e.key === "c") {
       // Resets the map
+      toast.success("Map Cleared", {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+        duration: 5000,
+      });
       topLayerSceneRef.current.updateScene(
         glowingLineMeshRef,
         cityGraph.edgeToIndex,
@@ -118,13 +146,26 @@ const CityMap = () => {
       setEndNode(null);
     } else if (e.key === "b") {
       // Toggle the bloom
-      setBloom(!bloom);
+      setBloomToggle(!bloomToggle);
     }
   });
 
+  // This useEffect controls the complete refresh of the page when reloading (Fixes memory leak issues *Stupid react*)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      window.location.reload();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   // This useEffect controls the creation of the map layers
   useEffect(() => {
-    if (!baseLayerSceneRef.current) {
+    if (!baseLayerSceneRef.current || !topLayerSceneRef.current) {
       // Initialize the base layer
       baseLayerSceneRef.current = new SceneObject(
         mapColor,
@@ -133,9 +174,7 @@ const CityMap = () => {
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, mapColor)
       );
-    }
 
-    if (!topLayerSceneRef.current) {
       // Initialize the pathfinding layer
       topLayerSceneRef.current = new SceneObject(
         searchColor,
@@ -144,19 +183,24 @@ const CityMap = () => {
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, searchColor)
       );
+
+      // Add the lines to each layer
+      baseLayerSceneRef.current.updateScene(lineMeshRef, null, true);
+      topLayerSceneRef.current.updateScene(
+        glowingLineMeshRef,
+        cityGraph.edgeToIndex,
+        false
+      );
+
+      // Fill the graph data structure
+      cityGraph.setCenter(center.x, center.y);
+      cityGraph.fillGraph(parsedLineData);
     }
 
-    // Add the lines to each layer
-    baseLayerSceneRef.current.updateScene(lineMeshRef, null, true);
-    topLayerSceneRef.current.updateScene(
-      glowingLineMeshRef,
-      cityGraph.edgeToIndex,
-      false
-    );
-
-    // Fill the graph data structure
-    cityGraph.setCenter(center.x, center.y);
-    cityGraph.fillGraph(parsedLineData);
+    return () => {
+      baseLayerSceneRef.current = null;
+      topLayerSceneRef.current = null;
+    };
   }, [
     baseLayerSceneRef,
     topLayerSceneRef,
@@ -202,7 +246,7 @@ const CityMap = () => {
   return (
     <>
       {/* The fun glow! */}
-      {bloom && (
+      {bloomToggle && (
         <EffectComposer>
           <Bloom
             intensity={0.5} // The bloom intensity

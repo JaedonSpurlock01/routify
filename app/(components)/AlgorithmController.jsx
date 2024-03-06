@@ -6,6 +6,7 @@ import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
 import * as THREE from "three";
 import { ColorContext } from "@/lib/context/color.context";
+import toast from "react-hot-toast";
 
 let g_line_array = [];
 
@@ -36,6 +37,13 @@ export const AlgorithmController = () => {
   // This useEffect clears the new lines when the stop button is pressed
   useEffect(() => {
     if (!isStopped) return;
+    toast.success("Map cleared", {
+      style: {
+        background: "#262626",
+        color: "#fff",
+      },
+      duration: 5000,
+    });
     updatedLineIndices.forEach((obj) => {
       const line = obj.currentEdge;
 
@@ -61,6 +69,24 @@ export const AlgorithmController = () => {
       const tempColor = new THREE.Color();
 
       const predecessors = pathfindingInstance.getPredecessors();
+
+      if (predecessors.get(currentNodeCoords)) {
+        toast.success("Path found", {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+          duration: 5000,
+        });
+      } else {
+        toast.error("No path found", {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+          duration: 5000,
+        });
+      }
 
       const delay = async (ms) => {
         return new Promise((resolve) => setTimeout(resolve, ms));

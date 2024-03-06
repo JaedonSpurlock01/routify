@@ -18,6 +18,7 @@ export const ColorContextProvider = ({ children }) => {
   const [pathColor, setPathColor] = useState(DEFAULT_PATH_COLOR);
   const [startDotColor, setStartDotColor] = useState(DEFAULT_START_DOT_COLOR);
   const [endDotColor, setEndDotColor] = useState(DEFAULT_END_DOT_COLOR);
+  const [bloomToggle, setBloomToggle] = useState(true);
 
   const states = {
     backgroundColor,
@@ -32,6 +33,8 @@ export const ColorContextProvider = ({ children }) => {
     setStartDotColor,
     endDotColor,
     setEndDotColor,
+    bloomToggle,
+    setBloomToggle,
   };
 
   return (

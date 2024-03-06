@@ -12,8 +12,14 @@ const COLOR_OPTIONS = {
 
 export const Display = () => {
   const [focusedColor, setFocusedColor] = useState(null);
-  const { setMapColor, setBackgroundColor, setSearchColor, setPathColor } =
-    useContext(ColorContext);
+  const {
+    setMapColor,
+    setBackgroundColor,
+    setSearchColor,
+    setPathColor,
+    bloomToggle,
+    setBloomToggle,
+  } = useContext(ColorContext);
   const { backgroundColor, mapColor, searchColor, pathColor } =
     useContext(ColorContext);
 
@@ -79,7 +85,13 @@ export const Display = () => {
       <div className="text-base flex flex-row mt-3 -mb-2">
         <p className="text-neutral-300">Bloom</p>
         <span className="ml-auto">
-          <Switch />
+          <Switch
+            checked={bloomToggle}
+            onChange={() => {
+              setBloomToggle(!bloomToggle);
+            }}
+            color="default"
+          />
         </span>
       </div>
     </div>

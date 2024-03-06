@@ -15,6 +15,7 @@ import { AlgorithmContextProvider } from "@/lib/context/algorithm.context";
 import { ThreeContextProvider } from "@/lib/context/three.context";
 import { AlgorithmController } from "./(components)/AlgorithmController";
 import { ColorContextProvider } from "@/lib/context/color.context";
+import { Toaster } from "react-hot-toast";
 
 export default function Home() {
   const [mapIsReady, setMapIsReady] = useState(false);
@@ -74,6 +75,7 @@ export default function Home() {
                 </a>
               </div>
               <AlgorithmController />
+              <Toaster position="bottom-left" />
             </div>
           )}
         </ColorContextProvider>

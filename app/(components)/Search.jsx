@@ -21,6 +21,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [connecting, setConnecting] = useState(true);
   const [cancel, setCancel] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [noRoads, setNoRoads] = useState(false);
   const { setParsedLineData } = useContext(ThreeContext);
 
   const EventEmitter = require("events");
@@ -93,6 +94,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setSelectedSuggestion(suggestion.display_name);
     setCity(suggestion.name);
     setLoadError(false);
+    setNoRoads(false);
 
     try {
       // Check if its in the cache, if so fetch it, otherwise use Overpass API
@@ -107,7 +109,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
       if (responseData.response && responseData.response === "no-cache") {
         sendRequest(suggestion, updateProgress, cancelEvent)
           .then((response) => {
-            const linesList = parseLineData(response);
+            const linesList = parseLineData(response, suggestion.boundingbox);
             setParsedLineData(linesList);
             setMapIsReady(true);
 
@@ -122,7 +124,8 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
             });
           })
           .catch((error) => {
-            console.log("Error in fallback request:", error);
+            // If cannot read elements, then 99% likely no roads exist
+            setNoRoads(true);
           })
           .finally(() => {
             setSendingRequest(false);
@@ -192,9 +195,11 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
               Could not find matching cities. Try a different city?
             </div>
           )}
-          {/* {noRoads && (
-            <div>Could not find any roads. Try a different query?</div>
-          )} */}
+          {noRoads && (
+            <div className="text-xs text-rose-500">
+              Could not find any roads. Try a different query?
+            </div>
+          )}
         </div>
       )}
     </div>
