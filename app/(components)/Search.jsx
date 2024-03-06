@@ -107,7 +107,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
       if (responseData.response && responseData.response === "no-cache") {
         sendRequest(suggestion, updateProgress, cancelEvent)
           .then((response) => {
-            const linesList = parseLineData(response);
+            const linesList = parseLineData(response, suggestion.boundingbox);
             setParsedLineData(linesList);
             setMapIsReady(true);
 
