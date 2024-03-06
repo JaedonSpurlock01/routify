@@ -6,7 +6,7 @@ export const LeaveCityButton = () => {
     <div className="flex flex-row items-center">
       <IoIosArrowRoundBack className="text-2xl" />
       <p
-        className="text-sm text-neutral-100 font-semibold hover:underline"
+        className="text-sm text-neutral-100 font-semibold hover:underline hover:cursor-pointer"
         onClick={() => {
           window.location.reload();
         }}
