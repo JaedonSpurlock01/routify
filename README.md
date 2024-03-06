@@ -4,7 +4,7 @@ A beautiful pathfinding visualizer that is bootstrapped with [`create-next-app`]
 
 It is designed to work with any city listed on [`OpenStreetMap`](https://www.openstreetmap.org/).
 
-![](https://github.com/JaedonSpurlock01/routify/demo.gif)
+![](https://gyazo.com/341afe55f0c0de2f7162ebc7ed8139d9)
 
 ## How it works
 
