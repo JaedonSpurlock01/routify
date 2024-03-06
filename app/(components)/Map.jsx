@@ -22,6 +22,7 @@ import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
 import { useMemo, useState, useContext, useEffect, useRef } from "react";
 import { ColorContext } from "@/lib/context/color.context";
+import toast from "react-hot-toast";
 
 let viewport = new THREE.Vector2();
 
@@ -81,6 +82,12 @@ const CityMap = () => {
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
       setDotCount(1);
+      toast.success("Added start at:\n9534 Cypress St.Garland, TX 75043", {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+      });
 
       // If the user is placing an end dot
     } else if (dotCount === 1) {
@@ -89,6 +96,15 @@ const CityMap = () => {
       endDotRef.current.y = closestNode.y;
       endDotRef.current.z = 0;
       setDotCount(2);
+      toast.success(
+        "Added goal at:\n649 W. El Dorado Street Suitland, MD 20746",
+        {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+        }
+      );
     }
   };
 
@@ -111,6 +127,13 @@ const CityMap = () => {
   useEventListener("keypress", (e) => {
     if (e.key === "c") {
       // Resets the map
+      toast.success("Map Cleared", {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+        duration: 5000,
+      });
       topLayerSceneRef.current.updateScene(
         glowingLineMeshRef,
         cityGraph.edgeToIndex,
