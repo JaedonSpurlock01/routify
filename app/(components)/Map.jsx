@@ -27,7 +27,6 @@ let viewport = new THREE.Vector2();
 
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
-  const [bloom, setBloom] = useState(true);
 
   // State variables to control state of pathfinding
   const { setStartNode, setEndNode, cityGraph, isStopped } =
@@ -43,8 +42,14 @@ const CityMap = () => {
   } = useContext(ThreeContext);
 
   // Color references
-  const { startDotColor, endDotColor, mapColor, searchColor } =
-    useContext(ColorContext);
+  const {
+    startDotColor,
+    endDotColor,
+    mapColor,
+    searchColor,
+    bloomToggle,
+    setBloomToggle,
+  } = useContext(ColorContext);
   const [prevColor, setPrevColor] = useState(mapColor);
 
   // Camera reference used to find cursor position
@@ -118,7 +123,7 @@ const CityMap = () => {
       setEndNode(null);
     } else if (e.key === "b") {
       // Toggle the bloom
-      setBloom(!bloom);
+      setBloomToggle(!bloomToggle);
     }
   });
 
@@ -202,7 +207,7 @@ const CityMap = () => {
   return (
     <>
       {/* The fun glow! */}
-      {bloom && (
+      {bloomToggle && (
         <EffectComposer>
           <Bloom
             intensity={0.5} // The bloom intensity
