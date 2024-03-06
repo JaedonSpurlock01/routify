@@ -5,12 +5,14 @@ export const LeaveCityButton = () => {
   return (
     <div className="flex flex-row items-center">
       <IoIosArrowRoundBack className="text-2xl" />
-      <a
+      <p
         className="text-sm text-neutral-100 font-semibold hover:underline"
-        href="."
+        onClick={() => {
+          window.location.reload();
+        }}
       >
         Try Another City
-      </a>
+      </p>
     </div>
   );
 };

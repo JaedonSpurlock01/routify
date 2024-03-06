@@ -127,9 +127,22 @@ const CityMap = () => {
     }
   });
 
+  // This useEffect controls the complete refresh of the page when reloading (Fixes memory leak issues *Stupid react*)
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      window.location.reload();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
+
   // This useEffect controls the creation of the map layers
   useEffect(() => {
-    if (!baseLayerSceneRef.current) {
+    if (!baseLayerSceneRef.current || !topLayerSceneRef.current) {
       // Initialize the base layer
       baseLayerSceneRef.current = new SceneObject(
         mapColor,
@@ -138,9 +151,7 @@ const CityMap = () => {
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, mapColor)
       );
-    }
 
-    if (!topLayerSceneRef.current) {
       // Initialize the pathfinding layer
       topLayerSceneRef.current = new SceneObject(
         searchColor,
@@ -149,19 +160,24 @@ const CityMap = () => {
         parsedLineData.length,
         generateSegmentProperties(parsedLineData, center, searchColor)
       );
+
+      // Add the lines to each layer
+      baseLayerSceneRef.current.updateScene(lineMeshRef, null, true);
+      topLayerSceneRef.current.updateScene(
+        glowingLineMeshRef,
+        cityGraph.edgeToIndex,
+        false
+      );
+
+      // Fill the graph data structure
+      cityGraph.setCenter(center.x, center.y);
+      cityGraph.fillGraph(parsedLineData);
     }
 
-    // Add the lines to each layer
-    baseLayerSceneRef.current.updateScene(lineMeshRef, null, true);
-    topLayerSceneRef.current.updateScene(
-      glowingLineMeshRef,
-      cityGraph.edgeToIndex,
-      false
-    );
-
-    // Fill the graph data structure
-    cityGraph.setCenter(center.x, center.y);
-    cityGraph.fillGraph(parsedLineData);
+    return () => {
+      baseLayerSceneRef.current = null;
+      topLayerSceneRef.current = null;
+    };
   }, [
     baseLayerSceneRef,
     topLayerSceneRef,
