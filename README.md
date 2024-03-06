@@ -1,8 +1,8 @@
 ## About
 
-A beautiful pathfinding visualizer that is bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+A pathfinding visualizer designed to work with any city listed on [`OpenStreetMap`](https://www.openstreetmap.org/).
 
-It is designed to work with any city listed on [`OpenStreetMap`](https://www.openstreetmap.org/).
+<br/>
 
 ![](https://github.com/JaedonSpurlock01/routify/blob/main/demo.gif)
 
@@ -16,21 +16,33 @@ We use [`Nominatim`](https://nominatim.openstreetmap.org/) for city search query
 
 ## Development & Installation
 
+Create an Amazon S3 and IAM account and create access/secret keys. Put those keys in a .env.local file as NEXT_ACCESS_KEY and NEXT_SECRET_KEY. Afterwards, run the following build commands.
+
 ```
-1. clone the repository
-2. run "npm install"
-3. run "npm run dev"
-4. open the browser given by the CLI
+NEXT_ACCESS_KEY = 12345
+NEXT_SECRET_KEY = 67890
 ```
+
+```
+1. run "npm install"
+2. run "npm run dev"
+```
+
+## Deployment
+
+This website uses Vercel to deploy the website. It is very easy to use and this website follows the basic setup process with their platform.
 
 ## Limitations
 
-Routify can handle large cities up to 200MB, which can include San Diego, Seattle, Columbus, etc. However, once you start to download larger cities, it will begin to get very laggy. We are downloading millions of lines after all.
+Routify can handle large cities up to 100MB, which can include San Diego, Seattle, Columbus, etc. However, once you start to download larger cities, the website will start to get very memory intensive and will slow down. We are downloading millions of lines after all.<br/>
+
+The biggest city I was able to load is Tokyo (43mb), which consumes up 2gb of memory.
 
 ## Algorithms Used
 
 A\* Search <br/>
 Greedy Search <br/>
+Dijkstra's Search <br/>
 Breadth-Firth-Search <br/>
 Depth-First-Search (Very Slow) <br/>
 
