@@ -7,7 +7,7 @@ import { KernelSize, Resolution } from "postprocessing";
 import { useThree } from "@react-three/fiber";
 
 // Library functions to handle map data
-import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
+import { SceneObject, lineBaseSegment } from "@/lib/models/SceneObject";
 import {
   generateSegmentProperties,
   calculateMapCenter,

@@ -5,7 +5,7 @@ import CityMap from "./(components)/Map";
 import { OrbitControls } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useState } from "react";
-import { CitySearch } from "./(components)/Search";
+import { CitySearch } from "./(components)/Search/Search";
 import { NavBar } from "./(components)/Navbar/Navbar";
 
 import Image from "next/image";
