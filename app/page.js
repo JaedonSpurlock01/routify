@@ -49,6 +49,7 @@ export default function Home() {
                 }}
                 onCreated={({ gl }) => {
                   gl.setClearColor("#2B2F33"); // Scene background color
+                  //gl.setClearColor("#b7cced"); // Scene background color
                 }}
               >
                 <CityMap />
@@ -74,7 +75,7 @@ export default function Home() {
                   <p className="text-xs font-light">data @ OpenStreetMap</p>
                 </a>
               </div>
-              {/* <AlgorithmController /> */}
+              <AlgorithmController />
               <Toaster position="bottom-left" />
             </div>
           )}

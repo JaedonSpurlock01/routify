@@ -17,6 +17,8 @@ import { ThreeContext } from "@/lib/context/three.context";
 import { useState, useContext, useEffect, useRef } from "react";
 import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
+import { haversineDistance } from "@/lib/utilities/geoUtils";
+import { worldPointFromScreenPoint } from "@/lib/utilities/mapUtils";
 
 let viewport = new THREE.Vector2();
 
@@ -51,13 +53,13 @@ const CityMap = () => {
   const endDotRef = useRef();
 
   if (!topLayerSceneRef.current) {
-    topLayerSceneRef.current = new SceneObject(0x83888c, 0.00004, boundingBox);
+    topLayerSceneRef.current = new SceneObject(0x83888c, 0.00005, boundingBox);
     const center = topLayerSceneRef.current.calculateMapCenter();
 
     // Add each node to the graph and scene
     parsedLineData.nodes.forEach((node) => {
       topLayerSceneRef.current.addNode(node);
-      // Add to graph here as well
+      cityGraph.addVertex(node.id, node.lat, node.lon);
     });
     // Create line properties for each way
     parsedLineData.ways.forEach((way) => {
@@ -68,9 +70,16 @@ const CityMap = () => {
         let startNodeCoords = topLayerSceneRef.current.getNode(startID);
         let endNodeCoords = topLayerSceneRef.current.getNode(endID);
 
+        let distance = haversineDistance(
+          ...startNodeCoords.unprojected,
+          ...endNodeCoords.unprojected
+        );
+
+        cityGraph.addEdge(startID, endID, distance * 1000);
+
         topLayerSceneRef.current.createLineProperty(
-          ...startNodeCoords,
-          ...endNodeCoords,
+          ...startNodeCoords.projected,
+          ...endNodeCoords.projected,
           startID,
           endID
         );
@@ -80,93 +89,98 @@ const CityMap = () => {
   }
 
   useEffect(() => {
-    if (!sceneLoaded) return;
-    topLayerSceneRef.current.updateScene(lineMeshRef);
-  }, [sceneLoaded, topLayerSceneRef, lineMeshRef]);
+    if (!sceneLoaded || !topLayerSceneRef.current) return;
+    topLayerSceneRef.current.updateScene(lineMeshRef, cityGraph.edgeToIndex);
+    return () => {
+      // Your entire pc will basically crash if you remove these two lines
+      // When hot-reloading or reloading, the line properties get lost, causing
+      // Large white squares overlapping each other 1M+ times, causing major
+      // z fighting problems
+      topLayerSceneRef.current = null;
+      setSceneLoaded(false);
+    };
+  }, [sceneLoaded, topLayerSceneRef, lineMeshRef, cityGraph.edgeToIndex]);
 
   // "Add" the dot to the scene (moving it from out-of-bounds)
-  // const addDot = (coordinates) => {
-  //   // Get the closest graph node based on coordinates
-  //   const closestNode = cityGraph.findNearestVertex(
-  //     coordinates.x,
-  //     coordinates.y,
-  //     0
-  //   );
+  const addDot = (coordinates) => {
+    // Get the closest graph node based on coordinates
+    const closestNode = topLayerSceneRef.current.findNearestNode(
+      coordinates.x,
+      coordinates.y
+    );
 
-  //   // If the user is placing a start dot
-  //   if (!dotCount) {
-  //     setStartNode(closestNode);
-  //     startDotRef.current.x = closestNode.x;
-  //     startDotRef.current.y = closestNode.y;
-  //     startDotRef.current.z = 0;
-  //     setDotCount(1);
-  //     toast.success("Added start at:\n9534 Cypress St.Garland, TX 75043", {
-  //       style: {
-  //         background: "#262626",
-  //         color: "#fff",
-  //       },
-  //     });
+    console.log("Placed dot at: ", closestNode);
 
-  //     // If the user is placing an end dot
-  //   } else if (dotCount === 1) {
-  //     setEndNode(closestNode);
-  //     endDotRef.current.x = closestNode.x;
-  //     endDotRef.current.y = closestNode.y;
-  //     endDotRef.current.z = 0;
-  //     setDotCount(2);
-  //     toast.success(
-  //       "Added goal at:\n649 W. El Dorado Street Suitland, MD 20746",
-  //       {
-  //         style: {
-  //           background: "#262626",
-  //           color: "#fff",
-  //         },
-  //       }
-  //     );
-  //   }
-  // };
+    // If the user is placing a start dot
+    if (!dotCount) {
+      setStartNode(closestNode.id);
+      startDotRef.current.x = closestNode.x;
+      startDotRef.current.y = closestNode.y;
+      startDotRef.current.z = 0;
+      setDotCount(1);
+      toast.success("Added start at:\n9534 Cypress St.Garland, TX 75043", {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+      });
+
+      // If the user is placing an end dot
+    } else if (dotCount === 1) {
+      setEndNode(closestNode.id);
+      endDotRef.current.x = closestNode.x;
+      endDotRef.current.y = closestNode.y;
+      endDotRef.current.z = 0;
+      setDotCount(2);
+      toast.success(
+        "Added goal at:\n649 W. El Dorado Street Suitland, MD 20746",
+        {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+        }
+      );
+    }
+  };
 
   // Click handling that first finds the position of the cursor,
   // then "adds" the dot to the map (actually it just moves it from far away)
   // Note: mounting and unmounting dots is not recommended by ThreeJS docs
-  // const handleClick = (event) => {
-  //   if (!event) return;
+  const handleClick = (event) => {
+    if (!event) return;
 
-  //   viewport.x = (event.clientX / window.innerWidth) * 2 - 1; // Find X NDC coordinate (-1 to 1)
-  //   viewport.y = -((event.clientY / window.innerHeight) * 2) + 1; // Find Y NDC coordinate (-1 to 1)
+    viewport.x = (event.clientX / window.innerWidth) * 2 - 1; // Find X NDC coordinate (-1 to 1)
+    viewport.y = -((event.clientY / window.innerHeight) * 2) + 1; // Find Y NDC coordinate (-1 to 1)
 
-  //   let canvasMousePos = worldPointFromScreenPoint(viewport, camera); // Find the position relative to ThreeJS scene
+    let canvasMousePos = worldPointFromScreenPoint(viewport, camera); // Find the position relative to ThreeJS scene
 
-  //   addDot(canvasMousePos);
-  // };
-  // useEventListener("dblclick", handleClick);
+    addDot(canvasMousePos);
+  };
+  useEventListener("dblclick", handleClick);
 
   // This event listener controls keyboard events
-  // useEventListener("keypress", (e) => {
-  //   if (e.key === "c") {
-  //     // Resets the map
-  //     toast.success("Map Cleared", {
-  //       style: {
-  //         background: "#262626",
-  //         color: "#fff",
-  //       },
-  //       duration: 5000,
-  //     });
-  //     topLayerSceneRef.current.updateScene(
-  //       glowingLineMeshRef,
-  //       cityGraph.edgeToIndex,
-  //       false
-  //     );
-  //     setDotCount(0);
-  //     startDotRef.current.x = 10;
-  //     endDotRef.current.x = 10;
-  //     setStartNode(null);
-  //     setEndNode(null);
-  //   } else if (e.key === "b") {
-  //     // Toggle the bloom
-  //     setBloomToggle(!bloomToggle);
-  //   }
-  // });
+  useEventListener("keypress", (e) => {
+    if (e.key === "c") {
+      // Resets the map
+      toast.success("Map Cleared", {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+        duration: 5000,
+      });
+      topLayerSceneRef.current.updateScene(lineMeshRef, cityGraph.edgeToIndex);
+      setDotCount(0);
+      startDotRef.current.x = 10;
+      endDotRef.current.x = 10;
+      setStartNode(null);
+      setEndNode(null);
+    } else if (e.key === "b") {
+      // Toggle the bloom
+      setBloomToggle(!bloomToggle);
+    }
+  });
 
   // This useEffect controls the complete refresh of the page when reloading (Fixes memory leak issues *Stupid react*)
   useEffect(() => {
@@ -182,29 +196,32 @@ const CityMap = () => {
   }, []);
 
   // This useEffect controls the reset of the dots
-  // useEffect(() => {
-  //   if (isStopped && startDotRef.current && endDotRef.current) {
-  //     setDotCount(0);
-  //     startDotRef.current.x = 10;
-  //     endDotRef.current.x = 10;
-  //     setStartNode(null);
-  //     setEndNode(null);
-  //   }
-  // }, [isStopped, setStartNode, setEndNode]);
+  useEffect(() => {
+    if (isStopped && startDotRef.current && endDotRef.current) {
+      setDotCount(0);
+      startDotRef.current.x = 10;
+      endDotRef.current.x = 10;
+      setStartNode(null);
+      setEndNode(null);
+    }
+  }, [isStopped, setStartNode, setEndNode]);
 
-  // This useEffect controls the color of map
-  // useEffect(() => {
-  //   if (prevColor === mapColor) return; // Avoid unnecessary map updates
-  //   baseLayerSceneRef.current.updateScene(lineMeshRef, null, true, mapColor);
-  //   setPrevColor(mapColor);
-  // }, [mapColor]);
-
-  // This useEffect controls the color of the search
-  // useEffect(() => {
-  //   if (prevColor === searchColor) return; // Avoid unnecessary map updates
-  //   topLayerSceneRef.current.changeColor(searchColor);
-  //   setPrevColor(searchColor);
-  // }, [searchColor]);
+  // This useEffect controls the color of the map
+  useEffect(() => {
+    if (prevColor === mapColor) return; // Avoid unnecessary map updates
+    topLayerSceneRef.current.updateScene(
+      lineMeshRef,
+      cityGraph.edgeToIndex,
+      mapColor
+    );
+    setPrevColor(mapColor);
+  }, [
+    mapColor,
+    prevColor,
+    lineMeshRef,
+    topLayerSceneRef,
+    cityGraph.edgeToIndex,
+  ]);
 
   // The ThreeJS canvas consists of four major assets:
   //  - The base layer: the main map layer
@@ -244,7 +261,7 @@ const CityMap = () => {
       </instancedMesh>
 
       {/* Green dot on map */}
-      {/* <mesh
+      <mesh
         ref={startDotRef}
         position={[
           startDotRef.current ? startDotRef.current.x : 10,
@@ -254,9 +271,10 @@ const CityMap = () => {
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
         <meshStandardMaterial color={startDotColor} />
-      </mesh> */}
+      </mesh>
+
       {/* Red dot on map */}
-      {/* <mesh
+      <mesh
         ref={endDotRef}
         position={[
           endDotRef.current ? endDotRef.current.x : 10,
@@ -266,7 +284,7 @@ const CityMap = () => {
       >
         <sphereGeometry args={[0.0004, 32, 32]} />
         <meshStandardMaterial color={endDotColor} />
-      </mesh> */}
+      </mesh>
     </>
   );
 };
