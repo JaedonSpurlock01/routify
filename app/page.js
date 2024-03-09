@@ -74,7 +74,7 @@ export default function Home() {
                   <p className="text-xs font-light">data @ OpenStreetMap</p>
                 </a>
               </div>
-              <AlgorithmController />
+              {/* <AlgorithmController /> */}
               <Toaster position="bottom-left" />
             </div>
           )}

@@ -7,7 +7,10 @@ import { SearchBox } from "./SearchBox";
 import { Suggestions } from "./Suggestions";
 import { Hero } from "./Hero";
 import sendRequest from "@/lib/services/request";
-import parseLineData from "@/lib/services/parsing";
+import { parseOverpassResponse } from "@/lib/services/parsing";
+
+import testCity from "@/lib/testing/test-cities/seattle.json";
+import { AlgorithmContext } from "@/lib/context/algorithm.context";
 
 export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [enteredInput, setEnteredInput] = useState("");
@@ -23,6 +26,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [loadError, setLoadError] = useState(false);
   const [noRoads, setNoRoads] = useState(false);
   const { setParsedLineData } = useContext(ThreeContext);
+  const { setBoundingBox } = useContext(AlgorithmContext);
 
   const EventEmitter = require("events");
   const cancelEvent = useMemo(() => new EventEmitter(), [EventEmitter]);
@@ -96,6 +100,17 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setLoadError(false);
     setNoRoads(false);
 
+    const parsedOverpassResponse = parseOverpassResponse(testCity);
+    setBoundingBox(suggestion.boundingbox);
+    setParsedLineData(parsedOverpassResponse);
+
+    setSuggestions([]);
+    setSuggestionsLoaded(false);
+    setLoadError(false);
+    setMapIsReady(true);
+    setSendingRequest(false);
+    setCity("DEVELOPMENT");
+    return;
     try {
       // Check if its in the cache, if so fetch it, otherwise use Overpass API
       const response = await fetch("/api/fetch", {
