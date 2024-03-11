@@ -7,40 +7,34 @@ import { KernelSize, Resolution } from "postprocessing";
 import { useThree } from "@react-three/fiber";
 
 // Library functions to handle map data
-import { SceneObject, lineBaseSegment } from "@/lib/utilities/sceneUtils";
-import {
-  generateSegmentProperties,
-  calculateMapCenter,
-  worldPointFromScreenPoint,
-} from "@/lib/utilities/mapUtils";
-
+import { SceneObject, lineBaseSegment } from "@/lib/models/SceneObject";
 // Third party libraries
 import { useEventListener } from "ahooks";
 
 // React
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
-import { useMemo, useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
+import { haversineDistance } from "@/lib/utilities/geoUtils";
+import { worldPointFromScreenPoint } from "@/lib/utilities/mapUtils";
 
 let viewport = new THREE.Vector2();
 
+const DEFAULT_OFFSET_DOT_POSITION = 100000;
+
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
+  const [sceneLoaded, setSceneLoaded] = useState(false);
 
   // State variables to control state of pathfinding
-  const { setStartNode, setEndNode, cityGraph, isStopped } =
+  const { setStartNode, setEndNode, cityGraph, isStopped, boundingBox } =
     useContext(AlgorithmContext);
 
   // State variables used to control the map
-  const {
-    glowingLineMeshRef,
-    lineMeshRef,
-    baseLayerSceneRef,
-    topLayerSceneRef,
-    parsedLineData,
-  } = useContext(ThreeContext);
+  const { lineMeshRef, topLayerSceneRef, parsedLineData } =
+    useContext(ThreeContext);
 
   // Color references
   const {
@@ -60,24 +54,72 @@ const CityMap = () => {
   const startDotRef = useRef();
   const endDotRef = useRef();
 
-  // Calculate center of map
-  const center = useMemo(
-    () => calculateMapCenter(parsedLineData),
-    [parsedLineData]
-  );
+  if (!topLayerSceneRef.current) {
+    topLayerSceneRef.current = new SceneObject(0x83888c, 0.01, boundingBox);
+
+    // Add each node to the graph and scene
+    parsedLineData.nodes.forEach((node) => {
+      topLayerSceneRef.current.addNode(node);
+      cityGraph.addVertex(node.id, node.lat, node.lon);
+    });
+
+    const center = topLayerSceneRef.current.calculateMapCenter();
+    console.log(boundingBox);
+    console.log(center);
+
+    // Create line properties for each way
+    parsedLineData.ways.forEach((way) => {
+      for (let i = 0; i < way.length - 1; i++) {
+        let startID = way[i];
+        let endID = way[i + 1];
+
+        let startNodeCoords = topLayerSceneRef.current.getNode(startID);
+        let endNodeCoords = topLayerSceneRef.current.getNode(endID);
+
+        let distance = haversineDistance(
+          ...startNodeCoords.unprojected,
+          ...endNodeCoords.unprojected
+        );
+
+        cityGraph.addEdge(startID, endID, distance * 1000);
+
+        topLayerSceneRef.current.createLineProperty(
+          ...startNodeCoords.projected,
+          ...endNodeCoords.projected,
+          startID,
+          endID
+        );
+      }
+    });
+    setSceneLoaded(true);
+  }
+
+  useEffect(() => {
+    if (!sceneLoaded || !topLayerSceneRef.current) return;
+    topLayerSceneRef.current.updateScene(lineMeshRef, cityGraph.edgeToIndex);
+    return () => {
+      // Your entire pc will basically crash if you remove these two lines
+      // When hot-reloading or reloading, the line properties get lost, causing
+      // Large white squares overlapping each other 1M+ times, causing major
+      // z fighting problems
+      topLayerSceneRef.current = null;
+      setSceneLoaded(false);
+    };
+  }, [sceneLoaded, topLayerSceneRef, lineMeshRef, cityGraph.edgeToIndex]);
 
   // "Add" the dot to the scene (moving it from out-of-bounds)
   const addDot = (coordinates) => {
     // Get the closest graph node based on coordinates
-    const closestNode = cityGraph.findNearestVertex(
+    const closestNode = topLayerSceneRef.current.findNearestNode(
       coordinates.x,
-      coordinates.y,
-      0
+      coordinates.y
     );
+
+    console.log("Added dot at: ", closestNode);
 
     // If the user is placing a start dot
     if (!dotCount) {
-      setStartNode(closestNode);
+      setStartNode(closestNode.id);
       startDotRef.current.x = closestNode.x;
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
@@ -91,7 +133,7 @@ const CityMap = () => {
 
       // If the user is placing an end dot
     } else if (dotCount === 1) {
-      setEndNode(closestNode);
+      setEndNode(closestNode.id);
       endDotRef.current.x = closestNode.x;
       endDotRef.current.y = closestNode.y;
       endDotRef.current.z = 0;
@@ -127,21 +169,17 @@ const CityMap = () => {
   useEventListener("keypress", (e) => {
     if (e.key === "c") {
       // Resets the map
-      toast.success("Map Cleared", {
+      toast.success("Map Resetted", {
         style: {
           background: "#262626",
           color: "#fff",
         },
         duration: 5000,
       });
-      topLayerSceneRef.current.updateScene(
-        glowingLineMeshRef,
-        cityGraph.edgeToIndex,
-        false
-      );
+      topLayerSceneRef.current.updateScene(lineMeshRef, cityGraph.edgeToIndex);
       setDotCount(0);
-      startDotRef.current.x = 10;
-      endDotRef.current.x = 10;
+      startDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
+      endDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
       setStartNode(null);
       setEndNode(null);
     } else if (e.key === "b") {
@@ -163,80 +201,33 @@ const CityMap = () => {
     };
   }, []);
 
-  // This useEffect controls the creation of the map layers
-  useEffect(() => {
-    if (!baseLayerSceneRef.current || !topLayerSceneRef.current) {
-      // Initialize the base layer
-      baseLayerSceneRef.current = new SceneObject(
-        mapColor,
-        0.00005,
-        0,
-        parsedLineData.length,
-        generateSegmentProperties(parsedLineData, center, mapColor)
-      );
-
-      // Initialize the pathfinding layer
-      topLayerSceneRef.current = new SceneObject(
-        searchColor,
-        0.0001,
-        0.00001,
-        parsedLineData.length,
-        generateSegmentProperties(parsedLineData, center, searchColor)
-      );
-
-      // Add the lines to each layer
-      baseLayerSceneRef.current.updateScene(lineMeshRef, null, true);
-      topLayerSceneRef.current.updateScene(
-        glowingLineMeshRef,
-        cityGraph.edgeToIndex,
-        false
-      );
-
-      // Fill the graph data structure
-      cityGraph.setCenter(center.x, center.y);
-      cityGraph.fillGraph(parsedLineData);
-    }
-
-    return () => {
-      baseLayerSceneRef.current = null;
-      topLayerSceneRef.current = null;
-    };
-  }, [
-    baseLayerSceneRef,
-    topLayerSceneRef,
-    center.x,
-    center.y,
-    cityGraph,
-    glowingLineMeshRef,
-    lineMeshRef,
-    parsedLineData,
-    center,
-  ]);
-
   // This useEffect controls the reset of the dots
   useEffect(() => {
     if (isStopped && startDotRef.current && endDotRef.current) {
       setDotCount(0);
-      startDotRef.current.x = 10;
-      endDotRef.current.x = 10;
+      startDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
+      endDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
       setStartNode(null);
       setEndNode(null);
     }
   }, [isStopped, setStartNode, setEndNode]);
 
-  // This useEffect controls the color of map
+  // This useEffect controls the color of the map
   useEffect(() => {
     if (prevColor === mapColor) return; // Avoid unnecessary map updates
-    baseLayerSceneRef.current.updateScene(lineMeshRef, null, true, mapColor);
+    topLayerSceneRef.current.updateScene(
+      lineMeshRef,
+      cityGraph.edgeToIndex,
+      mapColor
+    );
     setPrevColor(mapColor);
-  }, [mapColor]);
-
-  // This useEffect controls the color of the search
-  useEffect(() => {
-    if (prevColor === searchColor) return; // Avoid unnecessary map updates
-    topLayerSceneRef.current.changeColor(searchColor);
-    setPrevColor(searchColor);
-  }, [searchColor]);
+  }, [
+    mapColor,
+    prevColor,
+    lineMeshRef,
+    topLayerSceneRef,
+    cityGraph.edgeToIndex,
+  ]);
 
   // The ThreeJS canvas consists of four major assets:
   //  - The base layer: the main map layer
@@ -262,23 +253,10 @@ const CityMap = () => {
 
       <ambientLight intensity={10} />
 
-      {/* The base map layer */}
+      {/* The map layer */}
       <instancedMesh
         ref={lineMeshRef}
-        args={[null, null, parsedLineData.length]}
-      >
-        <shapeGeometry args={[lineBaseSegment]} />
-        <meshBasicMaterial
-          attach="material"
-          side={THREE.DoubleSide}
-          toneMapped={false}
-        />
-      </instancedMesh>
-
-      {/* The pathfinding map layer */}
-      <instancedMesh
-        ref={glowingLineMeshRef}
-        args={[null, null, parsedLineData.length]}
+        args={[null, null, topLayerSceneRef.current.getLineCount()]}
       >
         <shapeGeometry args={[lineBaseSegment]} />
         <meshBasicMaterial
@@ -292,12 +270,16 @@ const CityMap = () => {
       <mesh
         ref={startDotRef}
         position={[
-          startDotRef.current ? startDotRef.current.x : 10,
-          startDotRef.current ? startDotRef.current.y : 10,
+          startDotRef.current
+            ? startDotRef.current.x
+            : DEFAULT_OFFSET_DOT_POSITION,
+          startDotRef.current
+            ? startDotRef.current.y
+            : DEFAULT_OFFSET_DOT_POSITION,
           0,
         ]}
       >
-        <sphereGeometry args={[0.0004, 32, 32]} />
+        <sphereGeometry args={[0.06, 32, 32]} />
         <meshStandardMaterial color={startDotColor} />
       </mesh>
 
@@ -305,12 +287,12 @@ const CityMap = () => {
       <mesh
         ref={endDotRef}
         position={[
-          endDotRef.current ? endDotRef.current.x : 10,
-          endDotRef.current ? endDotRef.current.y : 10,
+          endDotRef.current ? endDotRef.current.x : DEFAULT_OFFSET_DOT_POSITION,
+          endDotRef.current ? endDotRef.current.y : DEFAULT_OFFSET_DOT_POSITION,
           0,
         ]}
       >
-        <sphereGeometry args={[0.0004, 32, 32]} />
+        <sphereGeometry args={[0.06, 32, 32]} />
         <meshStandardMaterial color={endDotColor} />
       </mesh>
     </>

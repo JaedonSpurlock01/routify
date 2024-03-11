@@ -1,5 +1,5 @@
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 import { IoMdPlay } from "react-icons/io";
@@ -10,6 +10,13 @@ export const StartButton = () => {
     useContext(AlgorithmContext);
 
   const [isClickProcessing, setIsClickProcessing] = useState(false);
+
+  useEffect(() => {
+    if (!endNode || !startNode) {
+      setIsStopped(true);
+      setIsAlgorithmReady(false);
+    }
+  }, [startNode, endNode, setIsAlgorithmReady, setIsStopped]);
 
   const handleButtonToggle = () => {
     if (isClickProcessing) return;

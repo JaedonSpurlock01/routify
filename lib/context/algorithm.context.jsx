@@ -8,6 +8,7 @@ export const AlgorithmContextProvider = ({ children }) => {
   const [isStopped, setIsStopped] = useState(true);
   const [startNode, setStartNode] = useState(null);
   const [endNode, setEndNode] = useState(null);
+  const [boundingBox, setBoundingBox] = useState([]);
 
   const cityGraph = useMemo(() => new Graph(), []);
 
@@ -21,6 +22,8 @@ export const AlgorithmContextProvider = ({ children }) => {
     cityGraph,
     setIsStopped,
     isStopped,
+    boundingBox,
+    setBoundingBox,
   };
 
   return (

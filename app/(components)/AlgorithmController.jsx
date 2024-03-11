@@ -2,19 +2,18 @@ import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
 import { useEffect, useContext, useMemo, useState, useRef } from "react";
 import PathfindingInstance from "@/lib/models/PathfindingInstance";
-import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
-import * as THREE from "three";
 import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
+import { updateLineColor } from "@/lib/utilities/geoUtils";
 
 let g_line_array = [];
 
 export const AlgorithmController = () => {
   const { cityGraph, isAlgorithmReady, startNode, endNode, isStopped } =
     useContext(AlgorithmContext);
-  const { glowingLineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
-  const { pathColor } = useContext(ColorContext);
+  const { lineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
+  const { pathColor, searchColor, mapColor } = useContext(ColorContext);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
   const [updatedLineIndices, setUpdatedLineIndices] = useState([]);
@@ -28,8 +27,8 @@ export const AlgorithmController = () => {
 
   const pathfindingInstance = useMemo(() => {
     let instance = new PathfindingInstance();
-    instance.setStartNode(startNode);
-    instance.setEndNode(endNode);
+    instance.setStartNode(cityGraph.getVertex(startNode));
+    instance.setEndNode(cityGraph.getVertex(endNode));
     instance.setGraph(cityGraph);
     return instance;
   }, [startNode, endNode, cityGraph]);
@@ -44,33 +43,26 @@ export const AlgorithmController = () => {
       },
       duration: 5000,
     });
-    updatedLineIndices.forEach((obj) => {
-      const line = obj.currentEdge;
-
-      addLineToMesh(
-        glowingLineMeshRef.current,
-        topLayerSceneRef.current.tempObject,
-        new THREE.Color(),
-        line.coords,
-        line.computedData,
-        obj.currentEdgeIndex,
-        false,
-        0.00001,
-        topLayerSceneRef.current.lineWidth
-      );
+    updatedLineIndices.forEach((index) => {
+      updateLineColor({
+        index: index,
+        colorHex: mapColor,
+        lineMesh: lineMeshRef.current,
+      });
     });
-    g_line_array = [];
-  }, [isStopped, glowingLineMeshRef, topLayerSceneRef]);
 
-  // This useEffect controls the "Path" found
+    g_line_array = [];
+  }, [isStopped, topLayerSceneRef, lineMeshRef, updatedLineIndices, mapColor]);
+
+  //   // This useEffect controls the "Path" found
   useEffect(() => {
     if (finished && !isStopped) {
-      let currentNodeCoords = endNode.createCompositeKey();
-      const tempColor = new THREE.Color();
-
+      let currentID = endNode;
       const predecessors = pathfindingInstance.getPredecessors();
 
-      if (predecessors.get(currentNodeCoords)) {
+      if (!predecessors) return;
+
+      if (predecessors.get(currentID)) {
         toast.success("Path found", {
           style: {
             background: "#262626",
@@ -95,37 +87,27 @@ export const AlgorithmController = () => {
       const processNode = async () => {
         while (
           predecessors &&
-          predecessors.get(currentNodeCoords) &&
+          predecessors.get(currentID) &&
           !isStoppedRef.current
         ) {
-          let cameFromCoords = predecessors.get(currentNodeCoords);
+          let cameFromID = predecessors.get(currentID);
 
-          const coordinates1 = `[${cameFromCoords}],[${currentNodeCoords}]`;
-          const coordinates2 = `[${currentNodeCoords}],[${cameFromCoords}]`;
+          const way1 = [cameFromID, currentID].join(",");
+          const way2 = [currentID, cameFromID].join(",");
 
           const currentEdgeIndex =
-            cityGraph.edgeToIndex.get(coordinates1) ??
-            cityGraph.edgeToIndex.get(coordinates2);
-          const currentEdge =
-            topLayerSceneRef.current.segmentProps[currentEdgeIndex];
+            cityGraph.edgeToIndex.get(way1) ?? cityGraph.edgeToIndex.get(way2);
 
-          if (currentEdge) {
-            addLineToMesh(
-              glowingLineMeshRef.current,
-              topLayerSceneRef.current.tempObject,
-              tempColor.setHex(pathColor).clone(),
-              currentEdge.coords,
-              currentEdge.computedData,
-              currentEdgeIndex,
-              true,
-              0.00003,
-              0.0003
-            );
+          if (currentEdgeIndex) {
+            updateLineColor({
+              index: currentEdgeIndex,
+              colorHex: pathColor,
+              lineMesh: lineMeshRef.current,
+            });
           }
 
-          g_line_array.push({ currentEdgeIndex, currentEdge });
-
-          currentNodeCoords = cameFromCoords;
+          g_line_array.push(currentEdgeIndex);
+          currentID = cameFromID;
 
           await delay(3);
         }
@@ -137,11 +119,11 @@ export const AlgorithmController = () => {
   }, [
     cityGraph.edgeToIndex,
     endNode,
-    glowingLineMeshRef,
-    isStopped,
-    pathfindingInstance,
-    topLayerSceneRef,
     finished,
+    isStopped,
+    lineMeshRef,
+    pathColor,
+    pathfindingInstance,
   ]);
 
   // This useEffect controls the pathfinding
@@ -169,23 +151,15 @@ export const AlgorithmController = () => {
 
         // Process the next step
         const currentEdgeIndex = pathfindingInstance.nextStep();
-        const currentEdge =
-          topLayerSceneRef.current.segmentProps[currentEdgeIndex];
 
-        if (currentEdge) {
-          addLineToMesh(
-            glowingLineMeshRef.current,
-            topLayerSceneRef.current.tempObject,
-            topLayerSceneRef.current.objectColor,
-            currentEdge.coords,
-            currentEdge.computedData,
-            currentEdgeIndex,
-            true,
-            0.00001,
-            topLayerSceneRef.current.lineWidth
-          );
+        if (currentEdgeIndex) {
+          updateLineColor({
+            index: currentEdgeIndex,
+            colorHex: searchColor,
+            lineMesh: lineMeshRef.current,
+          });
 
-          g_line_array.push({ currentEdgeIndex, currentEdge });
+          g_line_array.push(currentEdgeIndex);
         }
       }
 
@@ -193,17 +167,16 @@ export const AlgorithmController = () => {
     };
 
     processSteps(); // Initial call to start processing steps
+
+    setUpdatedLineIndices(g_line_array);
   }, [
+    cityGraph,
     isAlgorithmReady,
-    pathfindingInstance,
-    glowingLineMeshRef,
-    topLayerSceneRef,
     isStopped,
+    lineMeshRef,
+    pathfindingInstance,
+    searchColor,
     started,
-    setUpdatedLineIndices,
-    updatedLineIndices,
-    cityGraph.algorithmSpeed,
-    endNode,
   ]);
 
   return null;

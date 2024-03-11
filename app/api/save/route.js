@@ -1,4 +1,3 @@
-import encodeMap from "@/lib/caching/encode";
 import AWS from "aws-sdk";
 import env from "dotenv";
 env.config();
@@ -17,21 +16,21 @@ export async function POST(req) {
     const name = input.name;
     const date = input.date;
     const osm_id = input.osm_id;
-    const linesList = input.linesList;
+    const nodes = input.nodes;
+    const ways = input.ways;
 
-    // Encoding map
-    const binary_data = await encodeMap(name, date, osm_id, linesList);
+    const newData = { name, date, osm_id, nodes, ways };
 
     // Uploading to S3
     const searchParams = {
       Bucket: "routify-serialized-city-data",
       Key: `${osm_id}`,
-      Body: binary_data,
+      Body: JSON.stringify(newData),
     };
 
     await s3.putObject(searchParams).promise();
 
-    console.log("Binary data uploaded successfully");
+    console.log(`[ID: ${osm_id}] [NAME: ${name}] WAS SUCCESSFULLY CACHED`);
     // Returning a response
     return new Response(
       "Saved to database: " + name + ", " + date + ", " + osm_id
