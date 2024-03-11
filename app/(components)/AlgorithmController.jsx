@@ -2,9 +2,7 @@ import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import { ThreeContext } from "@/lib/context/three.context";
 import { useEffect, useContext, useMemo, useState, useRef } from "react";
 import PathfindingInstance from "@/lib/models/PathfindingInstance";
-import { addLineToMesh } from "@/lib/utilities/mapUtils";
 
-import * as THREE from "three";
 import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
 import { updateLineColor } from "@/lib/utilities/geoUtils";
@@ -15,7 +13,7 @@ export const AlgorithmController = () => {
   const { cityGraph, isAlgorithmReady, startNode, endNode, isStopped } =
     useContext(AlgorithmContext);
   const { lineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
-  const { pathColor, searchColor } = useContext(ColorContext);
+  const { pathColor, searchColor, mapColor } = useContext(ColorContext);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
   const [updatedLineIndices, setUpdatedLineIndices] = useState([]);
@@ -45,96 +43,88 @@ export const AlgorithmController = () => {
       },
       duration: 5000,
     });
-    // updatedLineIndices.forEach((obj) => {
-    //   const line = obj.currentEdge;
-
-    //   //Add line mesh
-    // });
+    updatedLineIndices.forEach((index) => {
+      updateLineColor({
+        index: index,
+        colorHex: mapColor,
+        lineMesh: lineMeshRef.current,
+      });
+    });
 
     g_line_array = [];
-  }, [isStopped, topLayerSceneRef]);
+  }, [isStopped, topLayerSceneRef, lineMeshRef, updatedLineIndices, mapColor]);
 
   //   // This useEffect controls the "Path" found
-  //   useEffect(() => {
-  //     if (finished && !isStopped) {
-  //       let currentNodeCoords = endNode.createCompositeKey();
-  //       const tempColor = new THREE.Color();
+  useEffect(() => {
+    if (finished && !isStopped) {
+      let currentID = endNode;
+      const predecessors = pathfindingInstance.getPredecessors();
 
-  //       const predecessors = pathfindingInstance.getPredecessors();
+      if (!predecessors) return;
 
-  //       if (predecessors.get(currentNodeCoords)) {
-  //         toast.success("Path found", {
-  //           style: {
-  //             background: "#262626",
-  //             color: "#fff",
-  //           },
-  //           duration: 5000,
-  //         });
-  //       } else {
-  //         toast.error("No path found", {
-  //           style: {
-  //             background: "#262626",
-  //             color: "#fff",
-  //           },
-  //           duration: 5000,
-  //         });
-  //       }
+      if (predecessors.get(currentID)) {
+        toast.success("Path found", {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+          duration: 5000,
+        });
+      } else {
+        toast.error("No path found", {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+          duration: 5000,
+        });
+      }
 
-  //       const delay = async (ms) => {
-  //         return new Promise((resolve) => setTimeout(resolve, ms));
-  //       };
+      const delay = async (ms) => {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      };
 
-  //       const processNode = async () => {
-  //         while (
-  //           predecessors &&
-  //           predecessors.get(currentNodeCoords) &&
-  //           !isStoppedRef.current
-  //         ) {
-  //           let cameFromCoords = predecessors.get(currentNodeCoords);
+      const processNode = async () => {
+        while (
+          predecessors &&
+          predecessors.get(currentID) &&
+          !isStoppedRef.current
+        ) {
+          let cameFromID = predecessors.get(currentID);
 
-  //           const coordinates1 = `[${cameFromCoords}],[${currentNodeCoords}]`;
-  //           const coordinates2 = `[${currentNodeCoords}],[${cameFromCoords}]`;
+          const way1 = [cameFromID, currentID].join(",");
+          const way2 = [currentID, cameFromID].join(",");
 
-  //           const currentEdgeIndex =
-  //             cityGraph.edgeToIndex.get(coordinates1) ??
-  //             cityGraph.edgeToIndex.get(coordinates2);
-  //           const currentEdge =
-  //             topLayerSceneRef.current.segmentProps[currentEdgeIndex];
+          const currentEdgeIndex =
+            cityGraph.edgeToIndex.get(way1) ?? cityGraph.edgeToIndex.get(way2);
 
-  //           if (currentEdge) {
-  //             addLineToMesh(
-  //               glowingLineMeshRef.current,
-  //               topLayerSceneRef.current.tempObject,
-  //               tempColor.setHex(pathColor).clone(),
-  //               currentEdge.coords,
-  //               currentEdge.computedData,
-  //               currentEdgeIndex,
-  //               true,
-  //               0.00003,
-  //               0.0003
-  //             );
-  //           }
+          if (currentEdgeIndex) {
+            updateLineColor({
+              index: currentEdgeIndex,
+              colorHex: pathColor,
+              lineMesh: lineMeshRef.current,
+            });
+          }
 
-  //           g_line_array.push({ currentEdgeIndex, currentEdge });
+          g_line_array.push(currentEdgeIndex);
+          currentID = cameFromID;
 
-  //           currentNodeCoords = cameFromCoords;
+          await delay(3);
+        }
+      };
 
-  //           await delay(3);
-  //         }
-  //       };
-
-  //       processNode();
-  //       setFinished(false);
-  //     }
-  //   }, [
-  //     cityGraph.edgeToIndex,
-  //     endNode,
-  //     glowingLineMeshRef,
-  //     isStopped,
-  //     pathfindingInstance,
-  //     topLayerSceneRef,
-  //     finished,
-  //   ]);
+      processNode();
+      setFinished(false);
+    }
+  }, [
+    cityGraph.edgeToIndex,
+    endNode,
+    finished,
+    isStopped,
+    lineMeshRef,
+    pathColor,
+    pathfindingInstance,
+  ]);
 
   // This useEffect controls the pathfinding
   useEffect(() => {
@@ -169,7 +159,7 @@ export const AlgorithmController = () => {
             lineMesh: lineMeshRef.current,
           });
 
-          g_line_array.push({ currentEdgeIndex });
+          g_line_array.push(currentEdgeIndex);
         }
       }
 
@@ -177,6 +167,8 @@ export const AlgorithmController = () => {
     };
 
     processSteps(); // Initial call to start processing steps
+
+    setUpdatedLineIndices(g_line_array);
   }, [
     cityGraph,
     isAlgorithmReady,

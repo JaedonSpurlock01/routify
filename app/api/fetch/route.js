@@ -1,4 +1,3 @@
-import decodeMap from "@/lib/caching/decode";
 import AWS from "aws-sdk";
 import env from "dotenv";
 env.config();
@@ -26,18 +25,19 @@ export async function POST(req) {
       // If it is in the database, download it
       const dbRequest = s3.getObject(searchParams);
 
-      console.log(`${name} was found in cache, downloading data...`);
       const data = await new Promise((resolve, reject) => {
         dbRequest.send((err, data) => {
           if (err) reject(err);
-          else resolve(data);
+          else {
+            console.log(`${name} was found in cache, downloading data...`);
+            resolve(data);
+          }
         });
       });
 
-      console.log(`Download complete! Now decoding ${name}`);
       if (data.Body) {
-        const decodedData = await decodeMap(data.Body);
-        return new Response(JSON.stringify(decodedData));
+        console.log(`Download complete! Now decoding ${name}`);
+        return new Response(JSON.stringify(JSON.parse(data.Body)));
       } else {
         return new Response(JSON.stringify({ error: error.message }));
       }

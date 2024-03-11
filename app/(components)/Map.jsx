@@ -22,6 +22,8 @@ import { worldPointFromScreenPoint } from "@/lib/utilities/mapUtils";
 
 let viewport = new THREE.Vector2();
 
+const DEFAULT_OFFSET_DOT_POSITION = 100;
+
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
   const [sceneLoaded, setSceneLoaded] = useState(false);
@@ -53,8 +55,10 @@ const CityMap = () => {
   const endDotRef = useRef();
 
   if (!topLayerSceneRef.current) {
-    topLayerSceneRef.current = new SceneObject(0x83888c, 0.00005, boundingBox);
+    topLayerSceneRef.current = new SceneObject(0x83888c, 0.01, boundingBox);
     const center = topLayerSceneRef.current.calculateMapCenter();
+    console.log(boundingBox);
+    console.log(center);
 
     // Add each node to the graph and scene
     parsedLineData.nodes.forEach((node) => {
@@ -109,7 +113,7 @@ const CityMap = () => {
       coordinates.y
     );
 
-    console.log("Placed dot at: ", closestNode);
+    console.log("Added dot at: ", closestNode);
 
     // If the user is placing a start dot
     if (!dotCount) {
@@ -172,8 +176,8 @@ const CityMap = () => {
       });
       topLayerSceneRef.current.updateScene(lineMeshRef, cityGraph.edgeToIndex);
       setDotCount(0);
-      startDotRef.current.x = 10;
-      endDotRef.current.x = 10;
+      startDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
+      endDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
       setStartNode(null);
       setEndNode(null);
     } else if (e.key === "b") {
@@ -199,8 +203,8 @@ const CityMap = () => {
   useEffect(() => {
     if (isStopped && startDotRef.current && endDotRef.current) {
       setDotCount(0);
-      startDotRef.current.x = 10;
-      endDotRef.current.x = 10;
+      startDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
+      endDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
       setStartNode(null);
       setEndNode(null);
     }
@@ -264,12 +268,16 @@ const CityMap = () => {
       <mesh
         ref={startDotRef}
         position={[
-          startDotRef.current ? startDotRef.current.x : 10,
-          startDotRef.current ? startDotRef.current.y : 10,
+          startDotRef.current
+            ? startDotRef.current.x
+            : DEFAULT_OFFSET_DOT_POSITION,
+          startDotRef.current
+            ? startDotRef.current.y
+            : DEFAULT_OFFSET_DOT_POSITION,
           0,
         ]}
       >
-        <sphereGeometry args={[0.0004, 32, 32]} />
+        <sphereGeometry args={[0.06, 32, 32]} />
         <meshStandardMaterial color={startDotColor} />
       </mesh>
 
@@ -277,12 +285,12 @@ const CityMap = () => {
       <mesh
         ref={endDotRef}
         position={[
-          endDotRef.current ? endDotRef.current.x : 10,
-          endDotRef.current ? endDotRef.current.y : 10,
+          endDotRef.current ? endDotRef.current.x : DEFAULT_OFFSET_DOT_POSITION,
+          endDotRef.current ? endDotRef.current.y : DEFAULT_OFFSET_DOT_POSITION,
           0,
         ]}
       >
-        <sphereGeometry args={[0.0004, 32, 32]} />
+        <sphereGeometry args={[0.06, 32, 32]} />
         <meshStandardMaterial color={endDotColor} />
       </mesh>
     </>

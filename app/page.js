@@ -42,7 +42,7 @@ export default function Home() {
             <div className="h-screen w-screen relative">
               <Canvas
                 camera={{
-                  position: [0, 0, 0.1],
+                  position: [0, 0, 10],
                   near: 0.001,
                   far: 1000,
                   aspect: window.innerWidth / window.innerHeight,

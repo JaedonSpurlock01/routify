@@ -9,7 +9,7 @@ import { Hero } from "./Hero";
 import sendRequest from "@/lib/services/request";
 import { parseOverpassResponse } from "@/lib/services/parsing";
 
-import testCity from "@/lib/testing/test-cities/seattle.json";
+import testCity from "@/lib/testing/test-cities/mexico-city.json";
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 
 export const CitySearch = ({ setMapIsReady, setCity }) => {
@@ -99,18 +99,8 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setCity(suggestion.name);
     setLoadError(false);
     setNoRoads(false);
-
-    const parsedOverpassResponse = parseOverpassResponse(testCity);
     setBoundingBox(suggestion.boundingbox);
-    setParsedLineData(parsedOverpassResponse);
 
-    setSuggestions([]);
-    setSuggestionsLoaded(false);
-    setLoadError(false);
-    setMapIsReady(true);
-    setSendingRequest(false);
-    setCity("DEVELOPMENT");
-    return;
     try {
       // Check if its in the cache, if so fetch it, otherwise use Overpass API
       const response = await fetch("/api/fetch", {
@@ -118,14 +108,15 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
         body: JSON.stringify({ suggestion }),
       });
 
+      //const responseData = await response.json();
       const responseData = await response.json();
 
       // Is not in cache, use fallback
       if (responseData.response && responseData.response === "no-cache") {
         sendRequest(suggestion, updateProgress, cancelEvent)
           .then((response) => {
-            const linesList = parseLineData(response, suggestion.boundingbox);
-            setParsedLineData(linesList);
+            const parsedOverpassResponse = parseOverpassResponse(response);
+            setParsedLineData(parsedOverpassResponse);
             setMapIsReady(true);
 
             fetch("/api/save", {
@@ -134,7 +125,8 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
                 name: suggestion.name,
                 date: Date(),
                 osm_id: suggestion.osm_id,
-                linesList,
+                nodes: parsedOverpassResponse.nodes,
+                ways: parsedOverpassResponse.ways,
               }),
             });
           })
@@ -146,13 +138,16 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
             setSendingRequest(false);
             setLoadError(false);
           });
-      } else if (!responseData.linesList) {
+      } else if (!responseData.ways) {
         setSendingRequest(false);
         setConnecting(true);
         setLoadError(true);
       } else {
         // Fetched data from cache
-        setParsedLineData(responseData.linesList);
+        setParsedLineData({
+          nodes: responseData.nodes,
+          ways: responseData.ways,
+        });
         setLoadError(false);
         setMapIsReady(true);
         setSendingRequest(false);
