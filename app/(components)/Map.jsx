@@ -22,7 +22,7 @@ import { worldPointFromScreenPoint } from "@/lib/utilities/mapUtils";
 
 let viewport = new THREE.Vector2();
 
-const DEFAULT_OFFSET_DOT_POSITION = 100;
+const DEFAULT_OFFSET_DOT_POSITION = 100000;
 
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
@@ -56,15 +56,17 @@ const CityMap = () => {
 
   if (!topLayerSceneRef.current) {
     topLayerSceneRef.current = new SceneObject(0x83888c, 0.01, boundingBox);
-    const center = topLayerSceneRef.current.calculateMapCenter();
-    console.log(boundingBox);
-    console.log(center);
 
     // Add each node to the graph and scene
     parsedLineData.nodes.forEach((node) => {
       topLayerSceneRef.current.addNode(node);
       cityGraph.addVertex(node.id, node.lat, node.lon);
     });
+
+    const center = topLayerSceneRef.current.calculateMapCenter();
+    console.log(boundingBox);
+    console.log(center);
+
     // Create line properties for each way
     parsedLineData.ways.forEach((way) => {
       for (let i = 0; i < way.length - 1; i++) {
@@ -167,7 +169,7 @@ const CityMap = () => {
   useEventListener("keypress", (e) => {
     if (e.key === "c") {
       // Resets the map
-      toast.success("Map Cleared", {
+      toast.success("Map Resetted", {
         style: {
           background: "#262626",
           color: "#fff",
