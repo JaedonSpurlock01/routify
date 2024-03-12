@@ -55,14 +55,30 @@ export const AlgorithmController = () => {
 
       if (!predecessors) return;
 
-      if (predecessors.get(currentID)) {
-        toast.success("Path found", {
-          style: {
-            background: "#262626",
-            color: "#fff",
-          },
-          duration: 5000,
-        });
+      const existingPath = predecessors.get(currentID);
+
+      if (existingPath) {
+        toast.success(
+          <span>
+            <b>Path found!</b>
+            <br />
+            Distance:{" "}
+            <span className="text-green-500">
+              {(pathfindingInstance.getFinalDistance() / 1000).toFixed(2)}{" "}
+              <span className="text-white">km</span>
+              <span className="text-white"> | </span>
+              {(pathfindingInstance.getFinalDistance() / 1609).toFixed(2)}{" "}
+              <span className="text-white">mi</span>
+            </span>
+          </span>,
+          {
+            style: {
+              background: "#262626",
+              color: "#fff",
+            },
+            duration: 8000,
+          }
+        );
       } else {
         toast.error("No path found", {
           style: {

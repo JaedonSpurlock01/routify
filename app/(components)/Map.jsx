@@ -19,6 +19,7 @@ import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
 import { haversineDistance } from "@/lib/utilities/geoUtils";
 import { worldPointFromScreenPoint } from "@/lib/utilities/mapUtils";
+import reverseGeocode from "@/lib/services/geocoding";
 
 let viewport = new THREE.Vector2();
 
@@ -106,14 +107,20 @@ const CityMap = () => {
   }, [sceneLoaded, topLayerSceneRef, lineMeshRef]);
 
   // "Add" the dot to the scene (moving it from out-of-bounds)
-  const addDot = (coordinates) => {
+  const addDot = async (coordinates) => {
     // Get the closest graph node based on coordinates
     const closestNode = topLayerSceneRef.current.findNearestNode(
       coordinates.x,
       coordinates.y
     );
 
-    console.log("Added dot at: ", closestNode);
+    console.log("Added dot at: ", closestNode.x, closestNode.y);
+
+    const addressFound = await reverseGeocode(
+      closestNode.lat,
+      closestNode.lon,
+      "API_KEY_REPLACE_IN_DEVELOPMENT"
+    );
 
     // If the user is placing a start dot
     if (!dotCount) {
@@ -122,12 +129,19 @@ const CityMap = () => {
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
       setDotCount(1);
-      toast.success(`Added start! [x: ${closestNode.x}] [${closestNode.y}]`, {
-        style: {
-          background: "#262626",
-          color: "#fff",
-        },
-      });
+      toast.success(
+        <span>
+          <b>Added start at:</b>
+          <br />
+          {addressFound.features[0].properties.formatted}
+        </span>,
+        {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+        }
+      );
 
       // If the user is placing an end dot
     } else if (dotCount === 1) {
@@ -136,12 +150,19 @@ const CityMap = () => {
       endDotRef.current.y = closestNode.y;
       endDotRef.current.z = 0;
       setDotCount(2);
-      toast.success(`Added goal! [x: ${closestNode.x}] [${closestNode.y}]`, {
-        style: {
-          background: "#262626",
-          color: "#fff",
-        },
-      });
+      toast.success(
+        <span>
+          <b>Added goal at:</b>
+          <br />
+          {addressFound.features[0].properties.formatted}
+        </span>,
+        {
+          style: {
+            background: "#262626",
+            color: "#fff",
+          },
+        }
+      );
     }
   };
 
