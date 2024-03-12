@@ -63,9 +63,7 @@ const CityMap = () => {
       cityGraph.addVertex(node.id, node.lat, node.lon);
     });
 
-    const center = topLayerSceneRef.current.calculateMapCenter();
-    console.log(boundingBox);
-    console.log(center);
+    topLayerSceneRef.current.calculateMapCenter();
 
     // Create line properties for each way
     parsedLineData.ways.forEach((way) => {
@@ -96,7 +94,7 @@ const CityMap = () => {
 
   useEffect(() => {
     if (!sceneLoaded || !topLayerSceneRef.current) return;
-    topLayerSceneRef.current.updateScene(lineMeshRef, cityGraph.edgeToIndex);
+    topLayerSceneRef.current.updateScene(lineMeshRef);
     return () => {
       // Your entire pc will basically crash if you remove these two lines
       // When hot-reloading or reloading, the line properties get lost, causing
@@ -105,7 +103,7 @@ const CityMap = () => {
       topLayerSceneRef.current = null;
       setSceneLoaded(false);
     };
-  }, [sceneLoaded, topLayerSceneRef, lineMeshRef, cityGraph.edgeToIndex]);
+  }, [sceneLoaded, topLayerSceneRef, lineMeshRef]);
 
   // "Add" the dot to the scene (moving it from out-of-bounds)
   const addDot = (coordinates) => {
@@ -124,7 +122,7 @@ const CityMap = () => {
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
       setDotCount(1);
-      toast.success("Added start at:\n9534 Cypress St.Garland, TX 75043", {
+      toast.success(`Added start! [x: ${closestNode.x}] [${closestNode.y}]`, {
         style: {
           background: "#262626",
           color: "#fff",
@@ -138,15 +136,12 @@ const CityMap = () => {
       endDotRef.current.y = closestNode.y;
       endDotRef.current.z = 0;
       setDotCount(2);
-      toast.success(
-        "Added goal at:\n649 W. El Dorado Street Suitland, MD 20746",
-        {
-          style: {
-            background: "#262626",
-            color: "#fff",
-          },
-        }
-      );
+      toast.success(`Added goal! [x: ${closestNode.x}] [${closestNode.y}]`, {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+      });
     }
   };
 
@@ -176,7 +171,7 @@ const CityMap = () => {
         },
         duration: 5000,
       });
-      topLayerSceneRef.current.updateScene(lineMeshRef, cityGraph.edgeToIndex);
+      topLayerSceneRef.current.updateScene(lineMeshRef);
       setDotCount(0);
       startDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
       endDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
@@ -215,11 +210,7 @@ const CityMap = () => {
   // This useEffect controls the color of the map
   useEffect(() => {
     if (prevColor === mapColor) return; // Avoid unnecessary map updates
-    topLayerSceneRef.current.updateScene(
-      lineMeshRef,
-      cityGraph.edgeToIndex,
-      mapColor
-    );
+    topLayerSceneRef.current.updateScene(lineMeshRef, mapColor);
     setPrevColor(mapColor);
   }, [
     mapColor,

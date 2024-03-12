@@ -5,7 +5,6 @@ import PathfindingInstance from "@/lib/models/PathfindingInstance";
 
 import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
-import { updateLineColor } from "@/lib/utilities/geoUtils";
 
 let g_line_array = [];
 
@@ -16,7 +15,7 @@ export const AlgorithmController = () => {
   const { pathColor, searchColor, mapColor } = useContext(ColorContext);
   const [started, setStarted] = useState(false);
   const [finished, setFinished] = useState(false);
-  const [updatedLineIndices, setUpdatedLineIndices] = useState([]);
+  const [updatedLines, setUpdatedLines] = useState([]);
 
   // Inside your component
   const isStoppedRef = useRef(false);
@@ -36,23 +35,17 @@ export const AlgorithmController = () => {
   // This useEffect clears the new lines when the stop button is pressed
   useEffect(() => {
     if (!isStopped) return;
-    toast.success("Map cleared", {
-      style: {
-        background: "#262626",
-        color: "#fff",
-      },
-      duration: 5000,
-    });
-    updatedLineIndices.forEach((index) => {
-      updateLineColor({
-        index: index,
+    updatedLines.forEach((line) => {
+      topLayerSceneRef.current.updateLineOnScene({
+        startID: line[0],
+        endID: line[1],
         colorHex: mapColor,
-        lineMesh: lineMeshRef.current,
+        lineWidth: 0.01,
+        mesh: lineMeshRef.current,
       });
     });
-
     g_line_array = [];
-  }, [isStopped, topLayerSceneRef, lineMeshRef, updatedLineIndices, mapColor]);
+  }, [isStopped, updatedLines, mapColor]);
 
   //   // This useEffect controls the "Path" found
   useEffect(() => {
@@ -92,23 +85,21 @@ export const AlgorithmController = () => {
         ) {
           let cameFromID = predecessors.get(currentID);
 
-          const way1 = [cameFromID, currentID].join(",");
-          const way2 = [currentID, cameFromID].join(",");
-
-          const currentEdgeIndex =
-            cityGraph.edgeToIndex.get(way1) ?? cityGraph.edgeToIndex.get(way2);
-
-          if (currentEdgeIndex) {
-            updateLineColor({
-              index: currentEdgeIndex,
+          if (cameFromID) {
+            topLayerSceneRef.current.updateLineOnScene({
+              startID: cameFromID,
+              endID: currentID,
               colorHex: pathColor,
-              lineMesh: lineMeshRef.current,
+              lineWidth: 0.05,
+              mesh: lineMeshRef.current,
+              z: 0.002,
             });
           }
 
-          g_line_array.push(currentEdgeIndex);
-          currentID = cameFromID;
+          // Add the updated line so it can be reset later
+          g_line_array.push([cameFromID, currentID]);
 
+          currentID = cameFromID;
           await delay(3);
         }
       };
@@ -117,7 +108,6 @@ export const AlgorithmController = () => {
       setFinished(false);
     }
   }, [
-    cityGraph.edgeToIndex,
     endNode,
     finished,
     isStopped,
@@ -130,7 +120,7 @@ export const AlgorithmController = () => {
   useEffect(() => {
     if (isStopped) {
       setStarted(false);
-      setUpdatedLineIndices(g_line_array);
+      setUpdatedLines(g_line_array);
       pathfindingInstance.reset();
       return;
     }
@@ -150,16 +140,20 @@ export const AlgorithmController = () => {
         }
 
         // Process the next step
-        const currentEdgeIndex = pathfindingInstance.nextStep();
+        const way = pathfindingInstance.nextStep();
 
-        if (currentEdgeIndex) {
-          updateLineColor({
-            index: currentEdgeIndex,
+        if (way && way.length == 2) {
+          topLayerSceneRef.current.updateLineOnScene({
+            startID: way[0],
+            endID: way[1],
             colorHex: searchColor,
-            lineMesh: lineMeshRef.current,
+            lineWidth: 0.03,
+            mesh: lineMeshRef.current,
+            z: 0.001,
           });
 
-          g_line_array.push(currentEdgeIndex);
+          // Add the updated line so it can be reset later
+          g_line_array.push([way[0], way[1]]);
         }
       }
 
@@ -168,7 +162,7 @@ export const AlgorithmController = () => {
 
     processSteps(); // Initial call to start processing steps
 
-    setUpdatedLineIndices(g_line_array);
+    setUpdatedLines(g_line_array);
   }, [
     cityGraph,
     isAlgorithmReady,
