@@ -92,7 +92,7 @@ export const AlgorithmController = () => {
               colorHex: pathColor,
               lineWidth: 0.05,
               mesh: lineMeshRef.current,
-              z: 0.002,
+              z: 0.008,
             });
           }
 

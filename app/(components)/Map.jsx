@@ -210,7 +210,8 @@ const CityMap = () => {
   // This useEffect controls the color of the map
   useEffect(() => {
     if (prevColor === mapColor) return; // Avoid unnecessary map updates
-    topLayerSceneRef.current.updateScene(lineMeshRef, mapColor);
+    topLayerSceneRef.current.changeColor(mapColor);
+    topLayerSceneRef.current.updateScene(lineMeshRef);
     setPrevColor(mapColor);
   }, [
     mapColor,
