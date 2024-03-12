@@ -119,7 +119,7 @@ const CityMap = () => {
     const addressFound = await reverseGeocode(
       closestNode.lat,
       closestNode.lon,
-      "API_KEY_REPLACE_IN_DEVELOPMENT"
+      ""
     );
 
     // If the user is placing a start dot

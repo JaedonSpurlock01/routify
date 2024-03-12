@@ -156,20 +156,24 @@ export const AlgorithmController = () => {
         }
 
         // Process the next step
-        const way = pathfindingInstance.nextStep();
+        const ways = pathfindingInstance.nextStep();
 
-        if (way && way.length == 2) {
-          topLayerSceneRef.current.updateLineOnScene({
-            startID: way[0],
-            endID: way[1],
-            colorHex: searchColor,
-            lineWidth: 0.03,
-            mesh: lineMeshRef.current,
-            z: 0.001,
-          });
+        if (ways) {
+          for (const way of ways) {
+            if (way && way.length == 2) {
+              topLayerSceneRef.current.updateLineOnScene({
+                startID: way[0],
+                endID: way[1],
+                colorHex: searchColor,
+                lineWidth: 0.025,
+                mesh: lineMeshRef.current,
+                z: 0.001,
+              });
 
-          // Add the updated line so it can be reset later
-          g_line_array.push([way[0], way[1]]);
+              // Add the updated line so it can be reset later
+              g_line_array.push([way[0], way[1]]);
+            }
+          }
         }
       }
 
