@@ -28,6 +28,8 @@ const DEFAULT_OFFSET_DOT_POSITION = 100000;
 const CityMap = () => {
   const [dotCount, setDotCount] = useState(0);
   const [sceneLoaded, setSceneLoaded] = useState(false);
+  const [isCursorInScene, setIsCursorInScene] = useState(true);
+  const [isClickProcessing, setIsClickProcessing] = useState(false);
 
   // State variables to control state of pathfinding
   const { setStartNode, setEndNode, cityGraph, isStopped, boundingBox } =
@@ -108,13 +110,14 @@ const CityMap = () => {
 
   // "Add" the dot to the scene (moving it from out-of-bounds)
   const addDot = async (coordinates) => {
+    if (isClickProcessing) return;
+    setIsClickProcessing(true);
+
     // Get the closest graph node based on coordinates
     const closestNode = topLayerSceneRef.current.findNearestNode(
       coordinates.x,
       coordinates.y
     );
-
-    console.log("Added dot at: ", closestNode.x, closestNode.y);
 
     const addressFound = await reverseGeocode(
       closestNode.lat,
@@ -164,13 +167,15 @@ const CityMap = () => {
         }
       );
     }
+
+    setIsClickProcessing(false);
   };
 
   // Click handling that first finds the position of the cursor,
   // then "adds" the dot to the map (actually it just moves it from far away)
   // Note: mounting and unmounting dots is not recommended by ThreeJS docs
   const handleClick = (event) => {
-    if (!event) return;
+    if (!event || !isCursorInScene) return;
 
     viewport.x = (event.clientX / window.innerWidth) * 2 - 1; // Find X NDC coordinate (-1 to 1)
     viewport.y = -((event.clientY / window.innerHeight) * 2) + 1; // Find Y NDC coordinate (-1 to 1)
@@ -180,6 +185,23 @@ const CityMap = () => {
     addDot(canvasMousePos);
   };
   useEventListener("dblclick", handleClick);
+
+  // Register mouse enter and leave events
+  useEffect(() => {
+    const canvas = document.querySelector("canvas");
+    if (canvas) {
+      canvas.addEventListener("mouseenter", () => setIsCursorInScene(true));
+      canvas.addEventListener("mouseleave", () => setIsCursorInScene(false));
+      return () => {
+        canvas.removeEventListener("mouseenter", () =>
+          setIsCursorInScene(true)
+        );
+        canvas.removeEventListener("mouseleave", () =>
+          setIsCursorInScene(false)
+        );
+      };
+    }
+  }, []);
 
   // This event listener controls keyboard events
   useEventListener("keypress", (e) => {
@@ -201,6 +223,19 @@ const CityMap = () => {
     } else if (e.key === "b") {
       // Toggle the bloom
       setBloomToggle(!bloomToggle);
+    } else if (e.key === "d") {
+      toast.success("Cleared points", {
+        style: {
+          background: "#262626",
+          color: "#fff",
+        },
+        duration: 5000,
+      });
+      setDotCount(0);
+      startDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
+      endDotRef.current.x = DEFAULT_OFFSET_DOT_POSITION;
+      setStartNode(null);
+      setEndNode(null);
     }
   });
 

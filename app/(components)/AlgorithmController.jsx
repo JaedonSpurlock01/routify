@@ -7,6 +7,7 @@ import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
 
 let g_line_array = [];
+let time_spent;
 
 export const AlgorithmController = () => {
   const {
@@ -80,8 +81,14 @@ export const AlgorithmController = () => {
                   {(finalDistance / 1609).toFixed(2)}{" "}
                   <span className="text-white">mi</span>
                 </span>
+                <br />
               </>
             )}
+            Time:{" "}
+            <span className="text-blue-500">
+              {(time_spent / 1000).toFixed(2)}
+            </span>{" "}
+            seconds
           </span>,
           {
             style: {
@@ -157,8 +164,11 @@ export const AlgorithmController = () => {
 
     if (!isAlgorithmReady || started) return;
 
+    let startTime;
+
     if (isAlgorithmReady && !started) {
       pathfindingInstance.start(selectedAlgorithm);
+      startTime = performance.now();
       setStarted(true);
     }
 
@@ -166,6 +176,7 @@ export const AlgorithmController = () => {
       for (let i = 0; i < cityGraph.algorithmSpeed; i++) {
         if (pathfindingInstance.finished) {
           setFinished(true);
+          time_spent = performance.now() - startTime;
           return;
         }
 

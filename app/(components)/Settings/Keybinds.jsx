@@ -9,7 +9,7 @@ export const Keybinds = () => {
         {[
           { key: "B", desc: "Toggle Bloom" },
           { key: "C", desc: "Reset Map" },
-          { key: "WASD", desc: "Move Camera" },
+          { key: "D", desc: "Clear Points" },
           { key: "Space", desc: "Start Search" },
         ].map((keybind, index) => (
           <KeybindLabel key={index} keybind={keybind.key} desc={keybind.desc} />
