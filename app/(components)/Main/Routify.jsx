@@ -5,7 +5,7 @@ import React, { useContext } from "react";
 import CityMap from "./Map";
 import { OrbitControls } from "@react-three/drei";
 import { NavBar } from "../Navbar/Navbar";
-import { AlgorithmController } from "../AlgorithmController";
+import { AlgorithmController } from "./AlgorithmController";
 import { Toaster } from "react-hot-toast";
 import { ColorContext } from "@/lib/context/color.context";
 
