@@ -1,7 +1,16 @@
 import React, { createContext, useMemo, useState } from "react";
-import { Graph } from "../models/Graph";
+import { Graph } from "../models/graph";
 
 export const AlgorithmContext = createContext();
+
+export const listAlgorithms = [
+  "Breadth-First Search",
+  "A* Search",
+  "Greedy-Best-First Search",
+  "Depth-First Search",
+  "Dijkstra's Search",
+  "Bidirectional Search",
+];
 
 export const AlgorithmContextProvider = ({ children }) => {
   const [isAlgorithmReady, setIsAlgorithmReady] = useState(false);
@@ -9,6 +18,7 @@ export const AlgorithmContextProvider = ({ children }) => {
   const [startNode, setStartNode] = useState(null);
   const [endNode, setEndNode] = useState(null);
   const [boundingBox, setBoundingBox] = useState([]);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("A* Search");
 
   const cityGraph = useMemo(() => new Graph(), []);
 
@@ -24,6 +34,8 @@ export const AlgorithmContextProvider = ({ children }) => {
     isStopped,
     boundingBox,
     setBoundingBox,
+    selectedAlgorithm,
+    setSelectedAlgorithm,
   };
 
   return (

@@ -9,8 +9,14 @@ import toast from "react-hot-toast";
 let g_line_array = [];
 
 export const AlgorithmController = () => {
-  const { cityGraph, isAlgorithmReady, startNode, endNode, isStopped } =
-    useContext(AlgorithmContext);
+  const {
+    cityGraph,
+    isAlgorithmReady,
+    startNode,
+    endNode,
+    isStopped,
+    selectedAlgorithm,
+  } = useContext(AlgorithmContext);
   const { lineMeshRef, topLayerSceneRef } = useContext(ThreeContext);
   const { pathColor, searchColor, mapColor } = useContext(ColorContext);
   const [started, setStarted] = useState(false);
@@ -144,7 +150,7 @@ export const AlgorithmController = () => {
     if (!isAlgorithmReady || started) return;
 
     if (isAlgorithmReady && !started) {
-      pathfindingInstance.start();
+      pathfindingInstance.start(selectedAlgorithm);
       setStarted(true);
     }
 

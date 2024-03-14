@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import {
+  AlgorithmContext,
+  listAlgorithms,
+} from "@/lib/context/algorithm.context";
+import React, { useState, useContext } from "react";
 
 import { AiOutlineCaretDown, AiOutlineCaretUp } from "react-icons/ai";
 
-const listAlgorithms = ["Breadth-First Search", "A* Search"];
-
 export const Dropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState("A* Search");
+  const { selectedAlgorithm, setSelectedAlgorithm } =
+    useContext(AlgorithmContext);
 
   return (
     <div>
@@ -21,7 +24,7 @@ export const Dropdown = () => {
           Algorithm
         </span>
         <div className="flex flex-row justify-between w-full mt-1.5 overflow-hidden text-xs text-neutral-100">
-          {selectedOption}
+          {selectedAlgorithm}
           {!isOpen ? <AiOutlineCaretDown /> : <AiOutlineCaretUp />}
         </div>
       </button>
@@ -31,7 +34,7 @@ export const Dropdown = () => {
           {listAlgorithms.map((algorithm, index) => (
             <button
               onClick={() => {
-                setSelectedOption(algorithm);
+                setSelectedAlgorithm(algorithm);
                 setIsOpen(false);
               }}
               key={index}
