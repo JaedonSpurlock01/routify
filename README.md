@@ -14,8 +14,6 @@ The city data is fetched by the [`Overpass API`](http://overpass-turbo.eu/) offe
 
 We use [`Nominatim`](https://nominatim.openstreetmap.org/) for city search querying. When a user clicks a result, we use that id to search in the cache if it exists. If it doesn't then we fallback to the Overpass API.
 
-For plotting lines, we are using the mercator projection based on the Earth's radius. In addition, to help tie with user experience, there is also reverse geocoded points based on placed points.
-
 ## Development & Installation
 
 Create an Amazon S3 and IAM account and create access/secret keys. Put those keys in a .env.local file as NEXT_ACCESS_KEY and NEXT_SECRET_KEY. Afterwards, run the following build commands.
@@ -42,13 +40,13 @@ The biggest city I was able to load is Chongqing, China (70mb), which consumes u
 
 ## Algorithms Used
 
-A\* Search <br/>
-Greedy Search <br/>
-Dijkstra's Search <br/>
-Breadth-Firth-Search <br/>
-Bidirectional Weighted Search <br />
-Bidirectional Unweighted Search <br />
-Depth-First-Search (Very Slow) <br/>
+A\* Search | (Weighted) Guarantees shortest path <br/> 
+Greedy Search | (Weighted) Does not guarantee shortest path <br/>
+Dijkstra's Search | (Weighted) Guarantees shortest path <br/>
+Breadth-Firth-Search | (Unweighted) Guarantees shortest path  <br/>
+Bidirectional Heuristic Search | (Weighted) Does not guarantee shortest path <br />
+Bidirectional Standard Search | (Unweighted) Does not guarantee shortest path <br />
+Depth-First-Search (Very bad for pathfinding) | (Unweighted) Does not guarantee shortest path <br/>
 
 ## Inspiration
 
