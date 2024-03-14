@@ -58,6 +58,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
 
     if (enteredInput === "") return;
 
+    setLoading(true);
     setConnecting(true); // To not show bytes loaded from previous response
     setNoRoads(false);
     setBytesLoaded(0);
