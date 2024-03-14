@@ -1,6 +1,7 @@
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 import React, { useContext, useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { useEventListener } from "ahooks";
 
 import { IoMdPlay } from "react-icons/io";
 import { IoStop } from "react-icons/io5";
@@ -17,6 +18,13 @@ export const StartButton = () => {
       setIsAlgorithmReady(false);
     }
   }, [startNode, endNode, setIsAlgorithmReady, setIsStopped]);
+
+  // Register mouse enter and leave events
+  useEventListener("keypress", (e) => {
+    if (e.key === " ") {
+      handleButtonToggle();
+    }
+  });
 
   const handleButtonToggle = () => {
     if (isClickProcessing) return;

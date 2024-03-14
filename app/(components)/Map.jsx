@@ -44,7 +44,6 @@ const CityMap = () => {
     startDotColor,
     endDotColor,
     mapColor,
-    searchColor,
     bloomToggle,
     setBloomToggle,
   } = useContext(ColorContext);

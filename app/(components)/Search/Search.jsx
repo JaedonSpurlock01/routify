@@ -58,9 +58,9 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
 
     if (enteredInput === "") return;
 
-    setLoading(true);
-
-    // IN THE FUTURE, CHECK IF THE NAME HAS BEEN CHECKED BEFORE (CACHING) TO LOWER STRESS ON API CALLS
+    setConnecting(true); // To not show bytes loaded from previous response
+    setNoRoads(false);
+    setBytesLoaded(0);
 
     try {
       // Send nominatium API request
