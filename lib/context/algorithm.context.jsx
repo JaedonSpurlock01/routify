@@ -9,7 +9,8 @@ export const listAlgorithms = [
   "Greedy Search",
   "Depth-First Search",
   "Dijkstra's Search",
-  "Bidirectional Search",
+  "Bidirectional (W) Search",
+  "Bidirectional (UW) Search",
 ];
 
 export const AlgorithmContextProvider = ({ children }) => {

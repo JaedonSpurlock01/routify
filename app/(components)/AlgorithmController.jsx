@@ -51,11 +51,12 @@ export const AlgorithmController = () => {
       });
     });
     g_line_array = [];
-  }, [isStopped, updatedLines, mapColor]);
+    setUpdatedLines([]);
+  }, [isStopped, updatedLines, mapColor, lineMeshRef, topLayerSceneRef]);
 
   //   // This useEffect controls the "Path" found
   useEffect(() => {
-    if (finished && !isStopped) {
+    if (finished && !isStopped && started) {
       let currentID = endNode;
       const predecessors = pathfindingInstance.getPredecessors();
 
@@ -141,6 +142,8 @@ export const AlgorithmController = () => {
     lineMeshRef,
     pathColor,
     pathfindingInstance,
+    topLayerSceneRef,
+    started,
   ]);
 
   // This useEffect controls the pathfinding
@@ -202,6 +205,8 @@ export const AlgorithmController = () => {
     pathfindingInstance,
     searchColor,
     started,
+    topLayerSceneRef,
+    selectedAlgorithm,
   ]);
 
   return null;
