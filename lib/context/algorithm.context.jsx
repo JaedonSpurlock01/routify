@@ -6,7 +6,7 @@ export const AlgorithmContext = createContext();
 export const listAlgorithms = [
   "Breadth-First Search",
   "A* Search",
-  "Greedy-Best-First Search",
+  "Greedy Search",
   "Depth-First Search",
   "Dijkstra's Search",
   "Bidirectional Search",

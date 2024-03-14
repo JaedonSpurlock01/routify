@@ -9,6 +9,13 @@ const DEFAULT_PATH_COLOR = 0xff5454;
 const DEFAULT_START_DOT_COLOR = 0x42f587;
 const DEFAULT_END_DOT_COLOR = 0xfc2d49;
 
+export const COLOR_OPTIONS = {
+  BACKGROUND: "Background",
+  MAP: "Map",
+  SEARCH: "Search",
+  PATH: "Path",
+};
+
 export const ColorContextProvider = ({ children }) => {
   const [backgroundColor, setBackgroundColor] = useState(
     DEFAULT_BACKGROUND_COLOR

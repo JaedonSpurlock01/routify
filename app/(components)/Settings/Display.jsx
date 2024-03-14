@@ -1,14 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import { ColorItem } from "./ColorItem";
 import { Switch } from "@mui/material";
-import { ColorContext } from "@/lib/context/color.context";
-
-const COLOR_OPTIONS = {
-  BACKGROUND: "Background",
-  MAP: "Map",
-  SEARCH: "Search",
-  PATH: "Path",
-};
+import { ColorContext, COLOR_OPTIONS } from "@/lib/context/color.context";
 
 export const Display = () => {
   const [focusedColor, setFocusedColor] = useState(null);
@@ -48,7 +41,13 @@ export const Display = () => {
         console.log("Something went really wrong here");
     }
     setFocusedColor(null);
-  }, [focusedColor]);
+  }, [
+    focusedColor,
+    setBackgroundColor,
+    setPathColor,
+    setSearchColor,
+    setMapColor,
+  ]);
 
   return (
     <div>
@@ -70,7 +69,6 @@ export const Display = () => {
           ].map((item, index) => (
             <ColorItem
               key={index}
-              color={item.color}
               desc={item.desc}
               setFocus={setFocusedColor}
               initialColor={

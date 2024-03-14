@@ -62,20 +62,25 @@ export const AlgorithmController = () => {
       if (!predecessors) return;
 
       const existingPath = predecessors.get(currentID);
+      const finalDistance = pathfindingInstance.getFinalDistance();
 
       if (existingPath) {
         toast.success(
           <span>
             <b>Path found!</b>
             <br />
-            Distance:{" "}
-            <span className="text-green-500">
-              {(pathfindingInstance.getFinalDistance() / 1000).toFixed(2)}{" "}
-              <span className="text-white">km</span>
-              <span className="text-white"> | </span>
-              {(pathfindingInstance.getFinalDistance() / 1609).toFixed(2)}{" "}
-              <span className="text-white">mi</span>
-            </span>
+            {finalDistance !== -1 && (
+              <>
+                Distance:{" "}
+                <span className="text-green-500">
+                  {(finalDistance / 1000).toFixed(2)}{" "}
+                  <span className="text-white">km</span>
+                  <span className="text-white"> | </span>
+                  {(finalDistance / 1609).toFixed(2)}{" "}
+                  <span className="text-white">mi</span>
+                </span>
+              </>
+            )}
           </span>,
           {
             style: {
