@@ -13,19 +13,21 @@ export default function Home() {
   const [city, setCity] = useState("");
 
   return (
-    <ThreeContextProvider>
-      <AlgorithmContextProvider>
-        <ColorContextProvider>
-          {!mapIsReady && (
-            <>
-              <div className="h-screen w-screen items-center flex flex-col justify-center">
-                <CitySearch setMapIsReady={setMapIsReady} setCity={setCity} />
-              </div>
-            </>
-          )}
-          {mapIsReady && <Routify city={city} />}
-        </ColorContextProvider>
-      </AlgorithmContextProvider>
-    </ThreeContextProvider>
+    <>
+      <ThreeContextProvider>
+        <AlgorithmContextProvider>
+          <ColorContextProvider>
+            {!mapIsReady && (
+              <>
+                <div className="h-screen w-screen items-center flex flex-col justify-center">
+                  <CitySearch setMapIsReady={setMapIsReady} setCity={setCity} />
+                </div>
+              </>
+            )}
+            {mapIsReady && <Routify city={city} />}
+          </ColorContextProvider>
+        </AlgorithmContextProvider>
+      </ThreeContextProvider>
+    </>
   );
 }

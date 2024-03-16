@@ -40,7 +40,7 @@ export const Progress = ({
           </Box>
         </div>
       )}
-      <p className="text-neutral-200">Currently loading {name}</p>
+      <p className="text-neutral-200 text-center">Currently loading {name}</p>
       {!loading && (
         <p className="text-neutral-500 text-xs mt-2">
           Loaded {bytesLoaded ? bytesLoaded.toLocaleString("en-us") : 0} bytes
