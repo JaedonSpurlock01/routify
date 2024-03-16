@@ -13,13 +13,12 @@ export const Routify = ({ city }) => {
   const { backgroundColor } = useContext(ColorContext);
 
   return (
-    <div className="h-screen w-screen relative">
+    <div className="h-screen w-screen relative overflow-hidden">
       <Canvas
         camera={{
           position: [0, 0, 10],
           near: 0.001,
           far: 1000,
-          aspect: window.innerWidth / window.innerHeight,
         }}
       >
         <color attach="background" args={[backgroundColor]} />

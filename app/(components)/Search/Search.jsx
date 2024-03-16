@@ -160,6 +160,9 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
       setLoadError(true);
       setSendingRequest(false);
       setConnecting(true);
+
+      setSuggestions([]);
+      setSuggestionsLoaded(false);
     }
   };
 
