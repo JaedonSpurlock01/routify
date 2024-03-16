@@ -137,7 +137,7 @@ const CityMap = () => {
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
       setDotCount(1);
-      if (addressFound.length) {
+      if (addressFound && addressFound.length) {
         toast.success(
           <span>
             <b>Added start at:</b>
@@ -172,7 +172,7 @@ const CityMap = () => {
       endDotRef.current.y = closestNode.y;
       endDotRef.current.z = 0;
       setDotCount(2);
-      if (addressFound.length) {
+      if (addressFound && addressFound.length) {
         toast.success(
           <span>
             <b>Added goal at:</b>
