@@ -200,7 +200,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
 
       {initialLoad && (
         <p className="text-neutral-400 text-sm mb-2 mt-4">
-          Can't think of one? Try some of these!
+          Can&apos;t think of one? Try some of these!
         </p>
       )}
 
