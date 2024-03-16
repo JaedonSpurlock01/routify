@@ -43,8 +43,6 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     if (event.lengthComputable) {
       setBytesLoaded(event.loaded);
       setPercentageComplete(event.loaded / event.total);
-      console.log(event.loaded / event.total);
-      console.log((event.loaded / event.total) * 100);
     } else {
       setBytesLoaded(event.loaded);
       setPercentageComplete(-1);
@@ -61,6 +59,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setConnecting(true); // To not show bytes loaded from previous response
     setNoRoads(false);
     setBytesLoaded(0);
+    setLoadError(false);
 
     try {
       // Send nominatium API request

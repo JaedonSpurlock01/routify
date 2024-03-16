@@ -30,7 +30,6 @@ export async function POST(req) {
 
     await s3.putObject(searchParams).promise();
 
-    console.log(`[ID: ${osm_id}] [NAME: ${name}] WAS SUCCESSFULLY CACHED`);
     // Returning a response
     return new Response(
       "Saved to database: " + name + ", " + date + ", " + osm_id
