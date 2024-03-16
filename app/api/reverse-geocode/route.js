@@ -12,6 +12,7 @@ export async function GET(req) {
       lon,
       process.env.NEXT_GEOAPIFY_KEY
     );
+    console.log("POINT FOUND: ", addressFound);
     if (addressFound.features[0].properties.formatted) {
       return new Response(
         JSON.stringify({
@@ -22,7 +23,7 @@ export async function GET(req) {
       return new Response(JSON.stringify({ address: "" }));
     }
   } catch (error) {
-    console.error("Error:", error);
+    console.log("Error:", error);
     return new Response(JSON.stringify({ error: "Internal System Error" }));
   }
 }
