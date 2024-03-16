@@ -12,6 +12,7 @@ import { parseOverpassResponse } from "@/lib/services/parsing";
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 
 import initialCities from "@/lib/data/suggestedCities";
+import { saveCity } from "@/app/actions";
 
 export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [enteredInput, setEnteredInput] = useState("");
@@ -122,16 +123,15 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
             setParsedLineData(parsedOverpassResponse);
             setMapIsReady(true);
 
-            fetch("/api/save", {
-              method: "POST",
-              body: JSON.stringify({
+            saveCity(
+              JSON.stringify({
                 name: suggestion.name,
                 date: Date(),
                 osm_id: suggestion.osm_id,
                 nodes: parsedOverpassResponse.nodes,
                 ways: parsedOverpassResponse.ways,
-              }),
-            });
+              })
+            );
           })
           .catch((error) => {
             // If cannot read elements, then 99% likely no roads exist

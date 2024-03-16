@@ -1,8 +1,10 @@
+"use server";
+
 import AWS from "aws-sdk";
 import env from "dotenv";
 env.config();
 
-export async function POST(req) {
+export async function saveCity(req) {
   try {
     AWS.config.update({
       accessKeyId: process.env.NEXT_ACCESS_KEY,
@@ -11,7 +13,7 @@ export async function POST(req) {
     });
 
     const s3 = new AWS.S3();
-    const input = await req.json();
+    const input = await JSON.parse(req);
 
     const name = input.name;
     const date = input.date;
@@ -30,12 +32,12 @@ export async function POST(req) {
 
     await s3.putObject(searchParams).promise();
 
-    // Returning a response
-    return new Response(
-      "Saved to database: " + name + ", " + date + ", " + osm_id
-    );
+    console.log(`SUCCESSFULLY CACHED [${name}] WITH OSM ID [${osm_id}]`);
+
+    return {
+      message: "cache successful",
+    };
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: "Internal System Error" }));
   }
 }
