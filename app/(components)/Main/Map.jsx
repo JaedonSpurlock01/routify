@@ -35,7 +35,7 @@ const CityMap = () => {
     useContext(AlgorithmContext);
 
   // State variables used to control the map
-  const { lineMeshRef, topLayerSceneRef, parsedLineData } =
+  const { lineMeshRef, topLayerSceneRef, parsedLineData, setLineCount } =
     useContext(ThreeContext);
 
   // Color references
@@ -86,6 +86,7 @@ const CityMap = () => {
       }
     });
     setSceneLoaded(true);
+    setLineCount(topLayerSceneRef.current.getLineCount());
   }
 
   useEffect(() => {
@@ -105,6 +106,8 @@ const CityMap = () => {
   const addDot = async (coordinates) => {
     if (isClickProcessing) return;
     setIsClickProcessing(true);
+
+    if (dotCount == 2) return;
 
     // Get the closest graph node based on coordinates
     const closestNode = topLayerSceneRef.current.findNearestNode(
