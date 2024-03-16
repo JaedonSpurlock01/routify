@@ -19,7 +19,6 @@ import { ColorContext } from "@/lib/context/color.context";
 import toast from "react-hot-toast";
 import { haversineDistance } from "@/lib/utilities/geoUtils";
 import { worldPointFromScreenPoint } from "@/lib/utilities/mapUtils";
-import reverseGeocode from "@/lib/services/geocoding";
 
 let viewport = new THREE.Vector2();
 

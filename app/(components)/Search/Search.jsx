@@ -9,7 +9,6 @@ import { Hero } from "./Hero";
 import sendRequest from "@/lib/services/request";
 import { parseOverpassResponse } from "@/lib/services/parsing";
 
-import testCity from "@/lib/testing/test-cities/mexico-city.json";
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 
 export const CitySearch = ({ setMapIsReady, setCity }) => {
