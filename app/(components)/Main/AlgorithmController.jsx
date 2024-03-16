@@ -53,7 +53,7 @@ export const AlgorithmController = () => {
     });
     g_line_array = [];
     setUpdatedLines([]);
-  }, [isStopped, updatedLines, mapColor, lineMeshRef, topLayerSceneRef]);
+  }, [isStopped, mapColor, lineMeshRef, topLayerSceneRef]);
 
   //   // This useEffect controls the "Path" found
   useEffect(() => {

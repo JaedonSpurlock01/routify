@@ -109,7 +109,6 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
         body: JSON.stringify({ suggestion }),
       });
 
-      //const responseData = await response.json();
       const responseData = await response.json();
 
       // Is not in cache, use fallback

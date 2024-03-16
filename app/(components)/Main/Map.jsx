@@ -40,13 +40,8 @@ const CityMap = () => {
     useContext(ThreeContext);
 
   // Color references
-  const {
-    startDotColor,
-    endDotColor,
-    mapColor,
-    bloomToggle,
-    setBloomToggle,
-  } = useContext(ColorContext);
+  const { startDotColor, endDotColor, mapColor, bloomToggle, setBloomToggle } =
+    useContext(ColorContext);
   const [prevColor, setPrevColor] = useState(mapColor);
 
   // Camera reference used to find cursor position
@@ -118,11 +113,23 @@ const CityMap = () => {
       coordinates.y
     );
 
-    const addressFound = await reverseGeocode(
-      closestNode.lat,
-      closestNode.lon,
-      "b4fa41c7a68b4237b2789e540b6e9edb"
-    );
+    let addressFound;
+    await fetch(
+      `/api/reverse-geocode?lat=${closestNode.lat}&lon=${closestNode.lon}`,
+      {
+        method: "GET",
+      }
+    )
+      .then(async (response) => {
+        if (!response.ok) {
+          addressFound = "";
+        }
+        const data = await response.json();
+        addressFound = data.address;
+      })
+      .catch((error) => {
+        addressFound = "";
+      });
 
     // If the user is placing a start dot
     if (!dotCount) {
@@ -131,19 +138,33 @@ const CityMap = () => {
       startDotRef.current.y = closestNode.y;
       startDotRef.current.z = 0;
       setDotCount(1);
-      toast.success(
-        <span>
-          <b>Added start at:</b>
-          <br />
-          {addressFound.features[0].properties.formatted}
-        </span>,
-        {
-          style: {
-            background: "#262626",
-            color: "#fff",
-          },
-        }
-      );
+      if (addressFound.length) {
+        toast.success(
+          <span>
+            <b>Added start at:</b>
+            <br />
+            {addressFound}
+          </span>,
+          {
+            style: {
+              background: "#262626",
+              color: "#fff",
+            },
+          }
+        );
+      } else {
+        toast.success(
+          <span>
+            <b>Added start</b>
+          </span>,
+          {
+            style: {
+              background: "#262626",
+              color: "#fff",
+            },
+          }
+        );
+      }
 
       // If the user is placing an end dot
     } else if (dotCount === 1) {
@@ -152,19 +173,33 @@ const CityMap = () => {
       endDotRef.current.y = closestNode.y;
       endDotRef.current.z = 0;
       setDotCount(2);
-      toast.success(
-        <span>
-          <b>Added goal at:</b>
-          <br />
-          {addressFound.features[0].properties.formatted}
-        </span>,
-        {
-          style: {
-            background: "#262626",
-            color: "#fff",
-          },
-        }
-      );
+      if (addressFound.length) {
+        toast.success(
+          <span>
+            <b>Added goal at:</b>
+            <br />
+            {addressFound}
+          </span>,
+          {
+            style: {
+              background: "#262626",
+              color: "#fff",
+            },
+          }
+        );
+      } else {
+        toast.success(
+          <span>
+            <b>Added goal</b>
+          </span>,
+          {
+            style: {
+              background: "#262626",
+              color: "#fff",
+            },
+          }
+        );
+      }
     }
 
     setIsClickProcessing(false);
