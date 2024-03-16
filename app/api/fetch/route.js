@@ -5,9 +5,6 @@ env.config();
 export const config = {
   api: {
     responseLimit: false,
-    bodyParser: {
-      sizeLimit: "200mb",
-    },
   },
 };
 
