@@ -2,14 +2,6 @@ import AWS from "aws-sdk";
 import env from "dotenv";
 env.config();
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "200mb",
-    },
-  },
-};
-
 export async function POST(req) {
   try {
     AWS.config.update({
