@@ -8,9 +8,11 @@ import { NavBar } from "../Navbar/Navbar";
 import { AlgorithmController } from "./AlgorithmController";
 import { Toaster } from "react-hot-toast";
 import { ColorContext } from "@/lib/context/color.context";
+import { ThreeContext } from "@/lib/context/three.context";
 
 export const Routify = ({ city }) => {
   const { backgroundColor } = useContext(ColorContext);
+  const { lineCount } = useContext(ThreeContext);
 
   return (
     <div className="h-screen w-screen relative overflow-hidden">
@@ -36,14 +38,25 @@ export const Routify = ({ city }) => {
       </Canvas>
       <NavBar />
       <div className="absolute bottom-6 right-6 text-neutral-100 flex-col flex text-right">
-        <h1 className="mb-1 text-2xl">{city}</h1>
+        <h1 className="text-2xl">{city}</h1>
+        <p className="text-xs mb-3">Lines: {lineCount.toLocaleString()}</p>
         <a
           href="https://www.openstreetmap.org/about/"
           target="_blank"
           className="hover:underline"
         >
-          <p className="text-xs font-light">data @ OpenStreetMap</p>
+          <p className="text-xs font-light">Data @ OpenStreetMap</p>
         </a>
+        <p className="text-xs font-light">
+          Powered by{" "}
+          <a
+            href="https://www.geoapify.com/"
+            className="hover:underline"
+            target="_blank"
+          >
+            Geoapify
+          </a>
+        </p>
       </div>
       <AlgorithmController />
       <Toaster position="bottom-left" />

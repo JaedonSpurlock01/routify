@@ -9,12 +9,15 @@ export const ThreeContextProvider = ({ children }) => {
 
   // Data needed to make everything run properly
   const [parsedLineData, setParsedLineData] = useState({});
+  const [lineCount, setLineCount] = useState(0);
 
   const states = {
     lineMeshRef,
     topLayerSceneRef,
     parsedLineData,
     setParsedLineData,
+    lineCount,
+    setLineCount,
   };
 
   return (
