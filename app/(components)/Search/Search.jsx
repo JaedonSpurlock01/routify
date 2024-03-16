@@ -61,6 +61,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setConnecting(true); // To not show bytes loaded from previous response
     setNoRoads(false);
     setBytesLoaded(0);
+    setLoadError(false);
 
     try {
       // Send nominatium API request
