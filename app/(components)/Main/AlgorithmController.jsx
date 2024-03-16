@@ -202,12 +202,16 @@ export const AlgorithmController = () => {
         }
       }
 
-      setTimeout(processSteps, 1);
+      setUpdatedLines(g_line_array);
+      requestAnimationFrame(processSteps);
     };
+    // Initial call to start pathfinding
+    requestAnimationFrame(processSteps);
 
-    processSteps(); // Initial call to start processing steps
-
-    setUpdatedLines(g_line_array);
+    return () => {
+      // Stop the animation loop if the component unmounts
+      cancelAnimationFrame(processSteps);
+    };
   }, [
     cityGraph,
     isAlgorithmReady,

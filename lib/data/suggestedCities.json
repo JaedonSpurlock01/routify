@@ -1,0 +1,50 @@
+[
+    {
+        "name": "San Diego",
+        "display_name": "San Diego, San Diego County, California, United States",
+        "type": "administrative",
+        "osm_id": 253832,
+        "osm_type": "relation",
+        "boundingbox": ["32.5347979","33.1141940","-117.3098161","-116.9057417"]
+    },
+    {
+        "name": "Seattle",
+        "display_name": "Seattle, King County, Washington, United States",
+        "type": "administrative",
+        "osm_id": 237385,
+        "osm_type": "relation",
+        "boundingbox": ["47.4810022","47.7341354","-122.4596960","-122.2244330"]
+    },
+    {
+        "name": "Columbus",
+        "display_name": "Columbus, Franklin County, Ohio, United States",
+        "type": "administrative",
+        "osm_id": 182706,
+        "osm_type": "relation",
+        "boundingbox": ["39.8086936","40.1573082","-83.2101797","-82.7713119"]
+    },
+    {
+        "name": "New York",
+        "display_name": "New York, United States",
+        "type": "administrative",
+        "osm_id": 175905,
+        "osm_type": "relation",
+        "boundingbox": ["40.4765780","40.9176300","-74.2588430","-73.7002330"]
+    },
+    {
+        "name": "Rome",
+        "display_name": "Rome, Roma Capitale, Lazio, Italy",
+        "type": "administrative",
+        "osm_id": 41485,
+        "osm_type": "relation",
+        "boundingbox": ["41.6556417","42.1410285","12.2344669","12.8557603"]
+    },
+    {
+        "name": "Amsterdam",
+        "display_name": "Amsterdam, North Holland, Netherlands",
+        "type": "administrative",
+        "osm_id": 271110,
+        "osm_type": "relation",
+        "boundingbox": ["52.2781742","52.4310638","4.7287563","5.0791622"]
+    }
+]

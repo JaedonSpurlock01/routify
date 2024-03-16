@@ -11,11 +11,13 @@ import { parseOverpassResponse } from "@/lib/services/parsing";
 
 import { AlgorithmContext } from "@/lib/context/algorithm.context";
 
+import initialCities from "@/lib/data/suggestedCities";
+
 export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [enteredInput, setEnteredInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [suggestionsLoaded, setSuggestionsLoaded] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoaded, setSuggestionsLoaded] = useState(true);
+  const [suggestions, setSuggestions] = useState(initialCities);
   const [selectedSuggestion, setSelectedSuggestion] = useState("");
   const [sendingRequest, setSendingRequest] = useState(false);
   const [bytesLoaded, setBytesLoaded] = useState(0);
@@ -24,6 +26,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
   const [cancel, setCancel] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [noRoads, setNoRoads] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   const { setParsedLineData } = useContext(ThreeContext);
   const { setBoundingBox } = useContext(AlgorithmContext);
 
@@ -60,6 +63,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
     setNoRoads(false);
     setBytesLoaded(0);
     setLoadError(false);
+    setInitialLoad(false);
 
     try {
       // Send nominatium API request
@@ -93,6 +97,7 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
 
   const pickSuggestion = async (suggestion) => {
     if (sendingRequest === true) return;
+    setInitialLoad(false);
     setSendingRequest(true);
     setSelectedSuggestion(suggestion.display_name);
     setCity(suggestion.name);
@@ -191,6 +196,12 @@ export const CitySearch = ({ setMapIsReady, setCity }) => {
         <div className="text-xs text-rose-500">
           Could not load city. Either try again or try a new city.
         </div>
+      )}
+
+      {initialLoad && (
+        <p className="text-neutral-400 text-sm mb-2 mt-4">
+          Can't think of one? Try some of these!
+        </p>
       )}
 
       {!loading && !sendingRequest && (
