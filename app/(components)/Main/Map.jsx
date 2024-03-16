@@ -107,7 +107,10 @@ const CityMap = () => {
     if (isClickProcessing) return;
     setIsClickProcessing(true);
 
-    if (dotCount == 2) return;
+    if (dotCount == 2) {
+      setIsClickProcessing(false);
+      return;
+    }
 
     // Get the closest graph node based on coordinates
     const closestNode = topLayerSceneRef.current.findNearestNode(
